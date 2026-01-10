@@ -44,7 +44,7 @@ class Setting extends Model
         }
 
         $valueToStore = match ($setting->type) {
-            'boolean' => $value ? 'true' : 'false',
+            'boolean' => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false',
             'json' => json_encode($value),
             default => (string) $value,
         };

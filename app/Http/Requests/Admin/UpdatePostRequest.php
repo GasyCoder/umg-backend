@@ -22,7 +22,32 @@ class UpdatePostRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'title' => ['sometimes','required','string','max:255'],
+            'excerpt' => ['nullable','string'],
+            'content_html' => ['sometimes','required','string'],
+
+            'cover_image_id' => ['nullable','exists:media,id'],
+
+            'category_ids' => ['nullable','array'],
+            'category_ids.*' => ['integer','exists:categories,id'],
+
+            'tag_ids' => ['nullable','array'],
+            'tag_ids.*' => ['integer','exists:tags,id'],
+
+            'gallery' => ['nullable','array'],
+            'gallery.*.media_id' => ['required','exists:media,id'],
+            'gallery.*.position' => ['nullable','integer','min:0'],
+            'gallery.*.caption' => ['nullable','string','max:255'],
+
+            'is_featured' => ['sometimes','boolean'],
+            'is_pinned' => ['sometimes','boolean'],
+
+            'seo_title' => ['nullable','string','max:255'],
+            'seo_description' => ['nullable','string','max:255'],
+
+            'status' => ['sometimes','string','in:draft,published,archived'],
+            // notify_subscribers usually only relevant on update if we re-publish, handled in controller
+            'notify_subscribers' => ['sometimes','boolean'],
         ];
     }
 }
