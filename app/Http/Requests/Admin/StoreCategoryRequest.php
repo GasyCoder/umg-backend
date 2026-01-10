@@ -6,23 +6,17 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCategoryRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()?->hasAnyRole(['SuperAdmin', 'Validateur']) ?? false;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'name' => ['required','string','max:255'],
+            'type' => ['nullable','string','max:50'], // default posts
+            'parent_id' => ['nullable','integer','exists:categories,id'],
         ];
     }
 }

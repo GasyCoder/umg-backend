@@ -2,18 +2,21 @@
 
 namespace App\Http\Resources;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class NewsletterSubscriberResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
-    public function toArray(Request $request): array
+    public function toArray($request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'email' => $this->email,
+            'name' => $this->name,
+            'status' => $this->status,
+            'token' => $this->token, // utile côté admin (pour lien de désinscription)
+            'subscribed_at' => $this->subscribed_at?->toISOString(),
+            'unsubscribed_at' => $this->unsubscribed_at?->toISOString(),
+            'created_at' => $this->created_at?->toISOString(),
+        ];
     }
 }

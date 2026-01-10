@@ -6,23 +6,19 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreNewsletterCampaignRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        // Redacteur peut créer une campagne draft
+        return $this->user()?->hasAnyRole(['SuperAdmin','Validateur','Redacteur']) ?? false;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'subject' => ['required','string','max:255'],
+            'content_html' => ['required','string'],
+            'content_text' => ['nullable','string'],
+            'post_id' => ['nullable','integer','exists:posts,id'],
         ];
     }
 }
