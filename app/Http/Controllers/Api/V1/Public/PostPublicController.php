@@ -36,6 +36,10 @@ class PostPublicController extends Controller
             $q->where('is_featured', true);
         }
 
+        if ($request->boolean('is_slide')) {
+            $q->where('is_slide', true);
+        }
+
         $per = min((int) $request->get('per_page', 12), 50);
         return PostResource::collection($q->paginate($per));
     }

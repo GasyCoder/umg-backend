@@ -69,10 +69,16 @@ Route::prefix('v1')->group(function () {
     // President message (public)
     Route::get('/president-message', [PresidentMessageController::class, 'active']);
 
+    // Stats (public)
+    Route::get('/stats', [SettingsPublicController::class, 'stats']);
+
     // Maintenance status
     Route::get('/maintenance-status', [SettingsPublicController::class, 'maintenanceStatus']);
+    Route::get('/settings', [SettingsPublicController::class, 'index']);
 
     Route::post('/newsletter/subscribe', [NewsletterPublicController::class, 'subscribe'])
+        ->middleware('throttle:newsletter');
+    Route::post('/newsletter/verify', [NewsletterPublicController::class, 'verify'])
         ->middleware('throttle:newsletter');
     Route::post('/newsletter/unsubscribe', [NewsletterPublicController::class, 'unsubscribe'])
         ->middleware('throttle:newsletter');
