@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\V1\Admin\EtablissementAdminController;
 use App\Http\Controllers\Api\V1\Admin\OrganizationPageAdminController;
 use App\Http\Controllers\Api\V1\Admin\SettingsAdminController;
 use App\Http\Controllers\Api\V1\Admin\PresidentMessageAdminController;
+use App\Http\Controllers\Api\V1\Admin\ServiceAdminController;
 
 // PUBLIC controllers
 use App\Http\Controllers\Api\V1\Public\CategoryPublicController;
@@ -31,6 +32,7 @@ use App\Http\Controllers\Api\V1\PublicApi\EtablissementController;
 use App\Http\Controllers\Api\V1\PublicApi\OrganizationPageController;
 use App\Http\Controllers\Api\V1\PublicApi\PresidentMessageController;
 use App\Http\Controllers\Api\V1\PublicApi\SettingsPublicController;
+use App\Http\Controllers\Api\V1\PublicApi\ServiceController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -60,6 +62,10 @@ Route::prefix('v1')->group(function () {
     // Etablissements (public)
     Route::get('/etablissements', [EtablissementController::class, 'index']);
     Route::get('/etablissements/{slug}', [EtablissementController::class, 'show']);
+
+    // Services (public)
+    Route::get('/services', [ServiceController::class, 'index']);
+    Route::get('/services/{slug}', [ServiceController::class, 'show']);
 
     // Organization pages (public)
     Route::get('/organization-pages', [OrganizationPageController::class, 'index']);
@@ -234,6 +240,17 @@ Route::prefix('v1')->group(function () {
         Route::put('/admin/president-messages/{id}', [PresidentMessageAdminController::class, 'update']);
         Route::delete('/admin/president-messages/{id}', [PresidentMessageAdminController::class, 'destroy']);
         Route::post('/admin/president-messages/{id}/activate', [PresidentMessageAdminController::class, 'activate']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADMIN: SERVICES
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/admin/services', [ServiceAdminController::class, 'index']);
+        Route::post('/admin/services', [ServiceAdminController::class, 'store']);
+        Route::get('/admin/services/{id}', [ServiceAdminController::class, 'show']);
+        Route::put('/admin/services/{id}', [ServiceAdminController::class, 'update']);
+        Route::delete('/admin/services/{id}', [ServiceAdminController::class, 'destroy']);
 
     });
 });
