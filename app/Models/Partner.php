@@ -10,10 +10,13 @@ class Partner extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name','type','website_url','country','description','is_featured','logo_id'
+        'name', 'type', 'website_url', 'country', 'description', 'is_featured', 'is_active', 'logo_id'
     ];
 
-    protected $casts = ['is_featured' => 'boolean'];
+    protected $casts = [
+        'is_featured' => 'boolean',
+        'is_active' => 'boolean',
+    ];
 
     public function logo() { return $this->belongsTo(Media::class, 'logo_id'); }
 
