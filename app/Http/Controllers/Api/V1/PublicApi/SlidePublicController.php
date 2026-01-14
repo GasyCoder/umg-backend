@@ -32,6 +32,8 @@ class SlidePublicController extends Controller
                     'name' => $slide->category->name,
                     'slug' => $slide->category->slug,
                 ] : null,
+                'bg_color_light' => $slide->bg_color_light,
+                'bg_color_dark' => $slide->bg_color_dark,
             ]);
 
         return response()->json([

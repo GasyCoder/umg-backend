@@ -16,6 +16,8 @@ class Slide extends Model
         'cta_url',
         'post_id',
         'category_id',
+        'bg_color_light',
+        'bg_color_dark',
         'order',
         'is_active',
         'created_by',

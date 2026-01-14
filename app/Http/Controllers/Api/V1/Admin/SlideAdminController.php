@@ -37,6 +37,8 @@ class SlideAdminController extends Controller
             'cta_url' => 'nullable|string|max:500',
             'post_id' => 'nullable|integer|exists:posts,id',
             'category_id' => 'nullable|integer|exists:categories,id',
+            'bg_color_light' => 'nullable|string|max:100',
+            'bg_color_dark' => 'nullable|string|max:100',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'nullable|boolean',
         ]);
@@ -83,6 +85,8 @@ class SlideAdminController extends Controller
             'cta_url' => 'nullable|string|max:500',
             'post_id' => 'nullable|integer|exists:posts,id',
             'category_id' => 'nullable|integer|exists:categories,id',
+            'bg_color_light' => 'nullable|string|max:100',
+            'bg_color_dark' => 'nullable|string|max:100',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'nullable|boolean',
         ]);
@@ -154,6 +158,8 @@ class SlideAdminController extends Controller
                 'name' => $slide->category->name,
                 'slug' => $slide->category->slug,
             ] : null,
+            'bg_color_light' => $slide->bg_color_light,
+            'bg_color_dark' => $slide->bg_color_dark,
             'order' => $slide->order,
             'is_active' => $slide->is_active,
             'created_at' => $slide->created_at?->toISOString(),
