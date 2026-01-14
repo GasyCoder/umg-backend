@@ -11,7 +11,7 @@ class UpdatePartnerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()?->hasAnyRole(['SuperAdmin', 'Validateur']) ?? false;
     }
 
     /**
@@ -22,7 +22,15 @@ class UpdatePartnerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'sometimes|required|string|max:255',
+            'type' => 'sometimes|in:national,international',
+            'website_url' => 'nullable|url|max:255',
+            'country' => 'nullable|string|max:100',
+            'description' => 'nullable|string',
+            'is_featured' => 'sometimes|boolean',
+            'is_active' => 'sometimes|boolean',
+            'logo' => 'nullable|image|max:2048',
+            'logo_id' => 'nullable|integer|exists:media,id',
         ];
     }
 }

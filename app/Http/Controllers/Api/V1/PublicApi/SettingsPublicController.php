@@ -11,13 +11,12 @@ class SettingsPublicController extends Controller
     public function stats(): JsonResponse
     {
         $stats = Setting::byGroup('stats');
-        
+
         return response()->json([
-            'students' => (int) ($stats['stat_students'] ?? 15000),
-            'staff' => (int) ($stats['stat_staff'] ?? 500),
-            'formations' => (int) ($stats['stat_formations'] ?? 50),
-            'establishments' => (int) ($stats['stat_establishments'] ?? 8),
-            'services' => (int) ($stats['stat_services'] ?? 30),
+            'students' => (int) ($stats['stat_students'] ?? 12000),
+            'teachers' => (int) ($stats['stat_teachers'] ?? 500),
+            'staff' => (int) ($stats['stat_staff'] ?? 200),
+            'establishments' => (int) ($stats['stat_establishments'] ?? 6),
         ]);
     }
 
@@ -43,6 +42,26 @@ class SettingsPublicController extends Controller
             'logo_url' => $logoUrl,
         ]);
     }
+    public function topbar(): JsonResponse
+    {
+        $topbar = Setting::byGroup('topbar');
+
+        return response()->json([
+            'library' => [
+                'label' => $topbar['topbar_library_label'] ?? 'Bibliothèque',
+                'url' => $topbar['topbar_library_url'] ?? '#',
+            ],
+            'webmail' => [
+                'label' => $topbar['topbar_webmail_label'] ?? 'Webmail',
+                'url' => $topbar['topbar_webmail_url'] ?? '#',
+            ],
+            'digital' => [
+                'label' => $topbar['topbar_digital_label'] ?? 'Espace Numérique',
+                'url' => $topbar['topbar_digital_url'] ?? '#',
+            ],
+        ]);
+    }
+
     public function index(): JsonResponse
     {
         $general = Setting::byGroup('general');

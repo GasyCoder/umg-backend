@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\Admin\OrganizationPageAdminController;
 use App\Http\Controllers\Api\V1\Admin\SettingsAdminController;
 use App\Http\Controllers\Api\V1\Admin\PresidentMessageAdminController;
 use App\Http\Controllers\Api\V1\Admin\ServiceAdminController;
+use App\Http\Controllers\Api\V1\Admin\SlideAdminController;
 
 // PUBLIC controllers
 use App\Http\Controllers\Api\V1\Public\CategoryPublicController;
@@ -33,6 +34,7 @@ use App\Http\Controllers\Api\V1\PublicApi\OrganizationPageController;
 use App\Http\Controllers\Api\V1\PublicApi\PresidentMessageController;
 use App\Http\Controllers\Api\V1\PublicApi\SettingsPublicController;
 use App\Http\Controllers\Api\V1\PublicApi\ServiceController;
+use App\Http\Controllers\Api\V1\PublicApi\SlidePublicController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -59,6 +61,9 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/partners', [PartnerPublicController::class, 'index']);
 
+    // Slides (public)
+    Route::get('/slides', [SlidePublicController::class, 'index']);
+
     // Etablissements (public)
     Route::get('/etablissements', [EtablissementController::class, 'index']);
     Route::get('/etablissements/{slug}', [EtablissementController::class, 'show']);
@@ -81,6 +86,7 @@ Route::prefix('v1')->group(function () {
     // Maintenance status
     Route::get('/maintenance-status', [SettingsPublicController::class, 'maintenanceStatus']);
     Route::get('/settings', [SettingsPublicController::class, 'index']);
+    Route::get('/topbar', [SettingsPublicController::class, 'topbar']);
 
     Route::post('/newsletter/subscribe', [NewsletterPublicController::class, 'subscribe'])
         ->middleware('throttle:newsletter');
@@ -174,6 +180,17 @@ Route::prefix('v1')->group(function () {
         Route::put('/admin/partners/{id}', [PartnerAdminController::class, 'update']);
         Route::delete('/admin/partners/{id}', [PartnerAdminController::class, 'destroy']);
 
+        /*
+        |--------------------------------------------------------------------------
+        | ADMIN: SLIDES
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/admin/slides', [SlideAdminController::class, 'index']);
+        Route::post('/admin/slides', [SlideAdminController::class, 'store']);
+        Route::post('/admin/slides/reorder', [SlideAdminController::class, 'reorder']);
+        Route::get('/admin/slides/{id}', [SlideAdminController::class, 'show']);
+        Route::match(['put', 'post'], '/admin/slides/{id}', [SlideAdminController::class, 'update']);
+        Route::delete('/admin/slides/{id}', [SlideAdminController::class, 'destroy']);
 
         /*
         |--------------------------------------------------------------------------

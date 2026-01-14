@@ -16,7 +16,9 @@ class PartnerResource extends JsonResource
             'country' => $this->country,
             'description' => $this->description,
             'is_featured' => (bool) $this->is_featured,
+            'is_active' => (bool) $this->is_active,
             'logo' => $this->whenLoaded('logo', fn() => new MediaResource($this->logo)),
+            'logo_url' => $this->whenLoaded('logo', fn() => $this->logo?->url),
         ];
     }
 }

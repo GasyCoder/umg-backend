@@ -7,7 +7,9 @@ use App\Http\Requests\Admin\StorePartnerRequest;
 use App\Http\Requests\Admin\UpdatePartnerRequest;
 use App\Http\Resources\PartnerResource;
 use App\Models\Partner;
+use App\Models\Media;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class PartnerAdminController extends Controller
 {
@@ -23,7 +25,18 @@ class PartnerAdminController extends Controller
 
     public function store(StorePartnerRequest $request)
     {
-        $partner = Partner::create($request->validated());
+        $data = $request->validated();
+
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            $media = $this->uploadLogo($request->file('logo'), $request->user()->id);
+            $data['logo_id'] = $media->id;
+        }
+
+        // Remove logo from data as it's not a model field
+        unset($data['logo']);
+
+        $partner = Partner::create($data);
         return new PartnerResource($partner->load('logo'));
     }
 
@@ -36,7 +49,18 @@ class PartnerAdminController extends Controller
     public function update(UpdatePartnerRequest $request, int $id)
     {
         $partner = Partner::findOrFail($id);
-        $partner->fill($request->validated())->save();
+        $data = $request->validated();
+
+        // Handle logo upload
+        if ($request->hasFile('logo')) {
+            $media = $this->uploadLogo($request->file('logo'), $request->user()->id);
+            $data['logo_id'] = $media->id;
+        }
+
+        // Remove logo from data as it's not a model field
+        unset($data['logo']);
+
+        $partner->fill($data)->save();
 
         return new PartnerResource($partner->load('logo'));
     }
@@ -46,5 +70,25 @@ class PartnerAdminController extends Controller
         $partner = Partner::findOrFail($id);
         $partner->delete();
         return response()->json(['data' => true]);
+    }
+
+    /**
+     * Upload logo file and create Media record
+     */
+    private function uploadLogo($file, int $userId): Media
+    {
+        $disk = 'public';
+        $folder = 'uploads/' . now()->format('Y/m');
+        $filename = (string) Str::uuid() . '.' . $file->getClientOriginalExtension();
+        $path = $file->storeAs($folder, $filename, $disk);
+
+        return Media::create([
+            'disk' => $disk,
+            'path' => $path,
+            'mime' => $file->getMimeType(),
+            'size' => $file->getSize(),
+            'alt' => 'Partner logo',
+            'created_by' => $userId,
+        ]);
     }
 }

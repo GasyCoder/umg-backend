@@ -21,6 +21,7 @@ class StorePartnerRequest extends FormRequest
             'description' => ['nullable','string'],
             'is_featured' => ['sometimes','boolean'],
             'logo_id' => ['nullable','exists:media,id'],
+            'logo' => ['nullable','image','max:2048'],
         ];
     }
 }
