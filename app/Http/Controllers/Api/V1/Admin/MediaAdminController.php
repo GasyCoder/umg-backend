@@ -31,7 +31,7 @@ class MediaAdminController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'file' => ['required','file','max:10240'],
+            'file' => ['required','file','max:51200'],
             'alt' => ['nullable','string','max:255'],
             'disk' => ['nullable','in:public,private'],
         ]);

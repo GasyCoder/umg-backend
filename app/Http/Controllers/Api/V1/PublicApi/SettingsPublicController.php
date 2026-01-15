@@ -81,9 +81,13 @@ class SettingsPublicController extends Controller
 
         $logoId = $general['logo_id'] ?? null;
         $faviconId = $general['favicon_id'] ?? null;
+        $aboutVideoId = $general['about_video_id'] ?? null;
+        $aboutVideoPosterId = $general['about_video_poster_id'] ?? null;
         
         $logoUrl = null;
         $faviconUrl = null;
+        $aboutVideoUrl = null;
+        $aboutVideoPosterUrl = null;
         
         if ($logoId) {
             $logo = \App\Models\Media::find($logoId);
@@ -93,6 +97,14 @@ class SettingsPublicController extends Controller
         if ($faviconId) {
             $favicon = \App\Models\Media::find($faviconId);
             $faviconUrl = $favicon?->url;
+        }
+        if ($aboutVideoId) {
+            $aboutVideo = \App\Models\Media::find($aboutVideoId);
+            $aboutVideoUrl = $aboutVideo?->url;
+        }
+        if ($aboutVideoPosterId) {
+            $aboutVideoPoster = \App\Models\Media::find($aboutVideoPosterId);
+            $aboutVideoPosterUrl = $aboutVideoPoster?->url;
         }
 
         return response()->json([
@@ -104,6 +116,8 @@ class SettingsPublicController extends Controller
             'site_address' => $general['site_address'] ?? 'Campus Ambondrona, BP 652, Mahajanga 401, Madagascar',
             'logo_url' => $logoUrl,
             'favicon_url' => $faviconUrl,
+            'about_video_url' => $aboutVideoUrl,
+            'about_video_poster_url' => $aboutVideoPosterUrl,
             'social' => [
                 'facebook' => $social['facebook_url'] ?? '#',
                 'twitter' => $social['twitter_url'] ?? '#',
