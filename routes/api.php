@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\V1\Admin\SettingsAdminController;
 use App\Http\Controllers\Api\V1\Admin\PresidentMessageAdminController;
 use App\Http\Controllers\Api\V1\Admin\ServiceAdminController;
 use App\Http\Controllers\Api\V1\Admin\SlideAdminController;
+use App\Http\Controllers\Api\V1\Admin\PresidentAdminController;
 
 // PUBLIC controllers
 use App\Http\Controllers\Api\V1\Public\CategoryPublicController;
@@ -26,6 +27,7 @@ use App\Http\Controllers\Api\V1\Public\DocumentDownloadPublicController;
 use App\Http\Controllers\Api\V1\Public\DocumentPublicController;
 use App\Http\Controllers\Api\V1\Public\HealthPublicController;
 use App\Http\Controllers\Api\V1\Public\NewsletterPublicController;
+use App\Http\Controllers\Api\V1\Public\ContactPublicController;
 use App\Http\Controllers\Api\V1\Public\PartnerPublicController;
 use App\Http\Controllers\Api\V1\Public\PostPublicController;
 use App\Http\Controllers\Api\V1\Public\TagPublicController;
@@ -35,6 +37,7 @@ use App\Http\Controllers\Api\V1\PublicApi\PresidentMessageController;
 use App\Http\Controllers\Api\V1\PublicApi\SettingsPublicController;
 use App\Http\Controllers\Api\V1\PublicApi\ServiceController;
 use App\Http\Controllers\Api\V1\PublicApi\SlidePublicController;
+use App\Http\Controllers\Api\V1\PublicApi\PresidentController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -80,6 +83,10 @@ Route::prefix('v1')->group(function () {
     // President message (public)
     Route::get('/president-message', [PresidentMessageController::class, 'active']);
 
+    // Presidents/Recteurs historiques (public)
+    Route::get('/presidents', [PresidentController::class, 'index']);
+    Route::get('/presidents/current', [PresidentController::class, 'current']);
+
     // Stats (public)
     Route::get('/stats', [SettingsPublicController::class, 'stats']);
 
@@ -95,6 +102,9 @@ Route::prefix('v1')->group(function () {
         ->middleware('throttle:newsletter');
     Route::post('/newsletter/unsubscribe', [NewsletterPublicController::class, 'unsubscribe'])
         ->middleware('throttle:newsletter');
+
+    Route::post('/contact', [ContactPublicController::class, 'send'])
+        ->middleware('throttle:contact');
 
     /*
     |--------------------------------------------------------------------------
@@ -258,6 +268,18 @@ Route::prefix('v1')->group(function () {
         Route::put('/admin/president-messages/{id}', [PresidentMessageAdminController::class, 'update']);
         Route::delete('/admin/president-messages/{id}', [PresidentMessageAdminController::class, 'destroy']);
         Route::post('/admin/president-messages/{id}/activate', [PresidentMessageAdminController::class, 'activate']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADMIN: PRESIDENTS (Historique)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/admin/presidents', [PresidentAdminController::class, 'index']);
+        Route::post('/admin/presidents', [PresidentAdminController::class, 'store']);
+        Route::post('/admin/presidents/reorder', [PresidentAdminController::class, 'reorder']);
+        Route::get('/admin/presidents/{id}', [PresidentAdminController::class, 'show']);
+        Route::put('/admin/presidents/{id}', [PresidentAdminController::class, 'update']);
+        Route::delete('/admin/presidents/{id}', [PresidentAdminController::class, 'destroy']);
 
         /*
         |--------------------------------------------------------------------------
