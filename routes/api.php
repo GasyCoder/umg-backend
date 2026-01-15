@@ -87,6 +87,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/maintenance-status', [SettingsPublicController::class, 'maintenanceStatus']);
     Route::get('/settings', [SettingsPublicController::class, 'index']);
     Route::get('/topbar', [SettingsPublicController::class, 'topbar']);
+    Route::get('/header', [SettingsPublicController::class, 'header']);
 
     Route::post('/newsletter/subscribe', [NewsletterPublicController::class, 'subscribe'])
         ->middleware('throttle:newsletter');

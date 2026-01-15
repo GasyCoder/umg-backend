@@ -62,6 +62,18 @@ class SettingsPublicController extends Controller
         ]);
     }
 
+    public function header(): JsonResponse
+    {
+        $header = Setting::byGroup('header');
+
+        return response()->json([
+            'cta' => [
+                'text' => $header['header_cta_text'] ?? 'Candidater/Résultats/Inscription',
+                'url' => $header['header_cta_url'] ?? '#',
+            ],
+        ]);
+    }
+
     public function index(): JsonResponse
     {
         $general = Setting::byGroup('general');
