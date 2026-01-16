@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\UpdatePasswordRequest;
+use App\Http\Requests\Admin\UpdateProfileRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -67,5 +69,34 @@ class AuthAdminController extends Controller
         $request->user()->currentAccessToken()?->delete();
 
         return response()->json(['data' => true]);
+    }
+
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+        $user = $request->user();
+
+        $user->update($request->validated());
+
+        return response()->json([
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $user->getRoleNames(),
+            ],
+        ]);
+    }
+
+    public function updatePassword(UpdatePasswordRequest $request)
+    {
+        $user = $request->user();
+
+        $user->update([
+            'password' => Hash::make($request->input('password')),
+        ]);
+
+        return response()->json([
+            'data' => 'Password updated successfully.',
+        ]);
     }
 }

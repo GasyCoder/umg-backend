@@ -117,6 +117,8 @@ Route::prefix('v1')->group(function () {
 
         Route::get('/auth/me', [AuthAdminController::class, 'me']);
         Route::post('/auth/logout', [AuthAdminController::class, 'logout']);
+        Route::put('/auth/profile', [AuthAdminController::class, 'updateProfile']);
+        Route::put('/auth/password', [AuthAdminController::class, 'updatePassword']);
 
         /*
         |--------------------------------------------------------------------------
