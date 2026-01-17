@@ -23,6 +23,7 @@ class UpdatePostRequest extends FormRequest
     {
         return [
             'title' => ['sometimes','required','string','max:255'],
+            'slug' => ['sometimes','string','max:255'],
             'excerpt' => ['nullable','string'],
             'content_html' => ['sometimes','required','string'],
 

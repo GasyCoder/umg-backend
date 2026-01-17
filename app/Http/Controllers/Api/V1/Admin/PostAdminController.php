@@ -87,17 +87,32 @@ class PostAdminController extends Controller
         $this->authorize('update', $post);
 
         $data = $request->validated();
+        $nextStatus = $data['status'] ?? $post->status;
+        $slugSource = $data['slug'] ?? $data['title'] ?? $post->slug;
 
         $post->fill([
             'title' => $data['title'] ?? $post->title,
+            'slug' => Slugger::uniqueSlugForUpdate(Post::class, $post->id, $slugSource),
             'excerpt' => $data['excerpt'] ?? $post->excerpt,
             'content_html' => $data['content_html'] ?? $post->content_html,
+            'status' => $nextStatus,
             'cover_image_id' => $data['cover_image_id'] ?? $post->cover_image_id,
             'is_featured' => (bool)($data['is_featured'] ?? $post->is_featured),
             'is_pinned' => (bool)($data['is_pinned'] ?? $post->is_pinned),
             'seo_title' => $data['seo_title'] ?? $post->seo_title,
             'seo_description' => $data['seo_description'] ?? $post->seo_description,
-        ])->save();
+        ]);
+
+        if (array_key_exists('status', $data)) {
+            if ($nextStatus === 'published' && !$post->published_at) {
+                $post->published_at = now();
+            }
+            if ($nextStatus !== 'published') {
+                $post->published_at = null;
+            }
+        }
+
+        $post->save();
 
         if (array_key_exists('category_ids', $data)) $post->categories()->sync($data['category_ids'] ?? []);
         if (array_key_exists('tag_ids', $data)) $post->tags()->sync($data['tag_ids'] ?? []);
