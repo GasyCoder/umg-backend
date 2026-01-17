@@ -31,7 +31,8 @@ class MediaAdminController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'file' => ['required','file','max:51200'],
+            // Max size is in kilobytes; keep a safe margin over 12.4MB.
+            'file' => ['required','file','max:20480'],
             'alt' => ['nullable','string','max:255'],
             'disk' => ['nullable','in:public,private'],
         ]);
