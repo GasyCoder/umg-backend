@@ -13,7 +13,7 @@ return [
     'allowed_headers' => ['*'],
     'exposed_headers' => ['Content-Disposition'],
     'allowed_origins_patterns' => [
-        '^https://([a-z0-9-]+\\.)?mahajanga-univ\\.mg$',
+        '#^https://([a-z0-9-]+\\.)?mahajanga-univ\\.mg$#',
     ],
     'max_age' => 0,
     'supports_credentials' => true,
