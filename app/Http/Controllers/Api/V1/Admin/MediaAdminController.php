@@ -13,7 +13,9 @@ class MediaAdminController extends Controller
     public function index(Request $request)
     {
         $per = min((int) $request->get('per_page', 50), 100);
-        $q = Media::query()->latest();
+        $q = Media::query()
+            ->select(['id', 'disk', 'path', 'mime', 'size', 'alt', 'width', 'height', 'created_at'])
+            ->latest();
 
         if ($type = $request->get('type')) {
             $q->where('mime', 'like', $type . '%');
@@ -31,8 +33,8 @@ class MediaAdminController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            // Max size is in kilobytes; keep a safe margin over 12.4MB.
-            'file' => ['required','file','max:20480'],
+            // Max size is in kilobytes; allow up to ~500MB for videos.
+            'file' => ['required','file','max:512000'],
             'alt' => ['nullable','string','max:255'],
             'disk' => ['nullable','in:public,private'],
         ]);
