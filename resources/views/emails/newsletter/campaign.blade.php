@@ -113,7 +113,7 @@
 
                     <div style="margin:0 0 12px 0;">
                       <span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#e8e8ff;color:#0606e0;font-size:12px;font-weight:700;border:1px solid rgba(6,6,224,.18);">
-                        {{ !empty($readMoreUrl) ? 'Featured Story' : (!empty($campaign->post_id) ? 'Newsletter' : 'Weekly Digest') }}
+                        {{ !empty($readMoreUrl) ? 'À la une' : (!empty($campaign->post_id) ? 'Newsletter' : 'Revue hebdomadaire') }}
                       </span>
                     </div>
 

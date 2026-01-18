@@ -39,7 +39,7 @@
             <td style="padding:18px 18px;background:{{ $bgDark }};">
               <div style="margin:0 0 10px 0;">
                 <span style="display:inline-block;background:{{ $primary }};color:#ffffff;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:6px 10px;border-radius:8px;">
-                  Featured Story
+                  À la une
                 </span>
               </div>
               @if(!empty($hero['category']))
