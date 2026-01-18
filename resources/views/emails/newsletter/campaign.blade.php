@@ -18,7 +18,7 @@
     .content img { max-width: 100% !important; height: auto !important; }
     .content table { width: 100% !important; max-width: 100% !important; }
     .content pre { white-space: pre-wrap !important; word-break: break-word !important; max-width: 100% !important; overflow: auto !important; }
-    .content a { color: #137fec; text-decoration: none; word-break: break-word; }
+    .content a { color: #0606e0; text-decoration: none; word-break: break-word; }
     .ql-align-center { text-align: center; }
     .ql-align-right { text-align: right; }
     .ql-align-justify { text-align: justify; }
@@ -34,13 +34,13 @@
     }
   </style>
 </head>
-<body class="font" style="margin:0;padding:0;background:#f6f7f8;color:#111827;">
+<body class="font" style="margin:0;padding:0;background:#f5f5f8;color:#111827;">
   {{-- Preheader (hidden) --}}
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
     {{ !empty($postSnippet) ? $postSnippet : $campaign->subject }}
   </div>
 
-  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f6f7f8;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f5f5f8;">
     <tr>
       <td align="center" style="padding:32px 12px;">
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" class="container" style="width:680px;max-width:680px;">
@@ -57,7 +57,7 @@
                         </td>
                         <td class="stack" align="right" style="font-size:12px;color:#6b7280;">
                           @if(!empty($readMoreUrl))
-                            <a href="{{ $readMoreUrl }}" style="color:#137fec;text-decoration:none;font-weight:600;">Voir en ligne</a>
+                            <a href="{{ $readMoreUrl }}" style="color:#0606e0;text-decoration:none;font-weight:600;">Voir en ligne</a>
                           @endif
                         </td>
                       </tr>
@@ -112,8 +112,8 @@
                     @endif
 
                     <div style="margin:0 0 12px 0;">
-                      <span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#eaf2ff;color:#137fec;font-size:12px;font-weight:700;border:1px solid rgba(19,127,236,.18);">
-                        {{ !empty($readMoreUrl) ? 'Featured Story' : 'Newsletter' }}
+                      <span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#e8e8ff;color:#0606e0;font-size:12px;font-weight:700;border:1px solid rgba(6,6,224,.18);">
+                        {{ !empty($readMoreUrl) ? 'Featured Story' : (!empty($campaign->post_id) ? 'Newsletter' : 'Weekly Digest') }}
                       </span>
                     </div>
 
@@ -151,7 +151,7 @@
 
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                         <tr>
-                          <td class="btn-td" bgcolor="#137fec" style="border-radius:10px;">
+                          <td class="btn-td" bgcolor="#0606e0" style="border-radius:10px;">
                             <a href="{{ $readMoreUrl }}"
                                class="btn"
                                style="display:inline-block;padding:12px 18px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;mso-padding-alt:12px 18px;">
@@ -176,7 +176,7 @@
               {{-- Footer --}}
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td class="px" style="padding:26px 24px;background:#0b1220;color:#e2e8f0;">
+                  <td class="px" style="padding:26px 24px;background:#0f0f23;color:#e2e8f0;">
                     <div style="font-size:12px;line-height:1.6;color:#94a3b8;">
                       Vous recevez cet email car vous êtes abonné(e) à la newsletter.
                     </div>

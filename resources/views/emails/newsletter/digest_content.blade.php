@@ -1,85 +1,91 @@
+@php
+  $primary = '#0606e0';
+  $bgDark = '#0f0f23';
+@endphp
+
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%;">
   @if(!empty($posts) && count($posts) > 0)
     @php($hero = $posts[0])
-    <tr>
-      <td style="padding:0;">
-        <div style="margin:0 0 14px 0;">
-          <span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#eaf2ff;color:#137fec;font-size:12px;font-weight:700;border:1px solid rgba(19,127,236,.18);">
-            À la une
-          </span>
-        </div>
 
-        @if(!empty($hero['cover_image_url']))
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+    {{-- Digest header --}}
+    <tr>
+      <td style="padding:0 0 16px 0;">
+        <div style="font-size:22px;line-height:1.2;font-weight:900;letter-spacing:-.2px;color:#0d0d1c;">
+          Revue hebdomadaire
+        </div>
+        <div style="margin-top:6px;font-size:14px;color:#6b7280;font-weight:600;">
+          {{ $issue_label ?? '' }}@if(!empty($issue_label) && !empty($date_label)) • @endif{{ $date_label ?? '' }}
+        </div>
+      </td>
+    </tr>
+
+    {{-- Featured hero card (email-safe) --}}
+    <tr>
+      <td style="padding:0 0 18px 0;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border-radius:16px;overflow:hidden;box-shadow:0 18px 40px rgba(13,13,28,.12);">
+          @if(!empty($hero['cover_image_url']))
             <tr>
-              <td style="border-radius:12px;overflow:hidden;">
+              <td style="padding:0;">
                 <a href="{{ $hero['url'] }}" style="text-decoration:none;display:block;">
                   <img src="{{ $hero['cover_image_url'] }}"
-                       alt=""
+                       alt="{{ $hero['title'] }}"
                        width="632"
-                       style="display:block;width:100%;max-width:632px;height:auto;border:0;outline:none;text-decoration:none;border-radius:12px;">
+                       style="display:block;width:100%;max-width:632px;height:auto;border:0;outline:none;text-decoration:none;">
                 </a>
               </td>
             </tr>
-          </table>
-          <div style="height:14px;line-height:14px;font-size:14px;">&nbsp;</div>
-        @endif
-
-        @if(!empty($hero['category']))
-          <div style="font-size:12px;font-weight:700;color:#137fec;margin:0 0 6px 0;">
-            {{ $hero['category'] }}
-          </div>
-        @endif
-
-        <div style="font-size:22px;line-height:1.25;font-weight:800;letter-spacing:-.2px;color:#0f172a;">
-          <a href="{{ $hero['url'] }}" style="color:#0f172a;text-decoration:none;">{{ $hero['title'] }}</a>
-        </div>
-
-        @if(!empty($hero['excerpt']))
-          <div style="margin-top:8px;font-size:15px;line-height:1.65;color:#475569;">
-            {{ $hero['excerpt'] }}
-          </div>
-        @endif
-
-        <div style="margin-top:14px;">
-          <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-            <tr>
-              <td bgcolor="#137fec" style="border-radius:10px;">
-                <a href="{{ $hero['url'] }}"
-                   style="display:inline-block;padding:12px 18px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;mso-padding-alt:12px 18px;">
-                  Lire l'article
+          @endif
+          <tr>
+            <td style="padding:18px 18px;background:{{ $bgDark }};">
+              <div style="margin:0 0 10px 0;">
+                <span style="display:inline-block;background:{{ $primary }};color:#ffffff;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:6px 10px;border-radius:8px;">
+                  Featured Story
+                </span>
+              </div>
+              @if(!empty($hero['category']))
+                <div style="font-size:12px;font-weight:700;color:#c7c7ff;margin:0 0 8px 0;">
+                  {{ $hero['category'] }}
+                </div>
+              @endif
+              <div style="font-size:22px;line-height:1.25;font-weight:900;letter-spacing:-.2px;color:#ffffff;">
+                <a href="{{ $hero['url'] }}" style="color:#ffffff;text-decoration:none;">{{ $hero['title'] }}</a>
+              </div>
+              @if(!empty($hero['excerpt']))
+                <div style="margin-top:10px;font-size:14px;line-height:1.65;color:#d7d7e6;">
+                  {{ $hero['excerpt'] }}
+                </div>
+              @endif
+              <div style="margin-top:14px;">
+                <a href="{{ $hero['url'] }}" style="color:#ffffff;text-decoration:none;font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;">
+                  Lire la suite →
                 </a>
-              </td>
-            </tr>
-          </table>
-        </div>
-
-        <div style="height:18px;line-height:18px;font-size:18px;">&nbsp;</div>
-        <div style="height:1px;background:#eef2f7;"></div>
-        <div style="height:18px;line-height:18px;font-size:18px;">&nbsp;</div>
+              </div>
+            </td>
+          </tr>
+        </table>
       </td>
     </tr>
 
     @if(count($posts) > 1)
       <tr>
         <td style="padding:0;">
-          <div style="font-size:18px;font-weight:800;letter-spacing:-.2px;color:#0f172a;margin:0 0 12px 0;">
-            Dernières actualités
+          <div style="font-size:18px;font-weight:900;letter-spacing:-.2px;color:#0d0d1c;margin:0 0 12px 0;">
+            Cette semaine
           </div>
 
           <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
             @php($rest = array_slice($posts, 1))
             @foreach(array_chunk($rest, 2) as $row)
               <tr>
-                @foreach($row as $item)
-                  <td class="stack" width="50%" valign="top" style="padding:0 10px 16px 0;">
-                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #eef2f7;border-radius:12px;overflow:hidden;">
+                @foreach($row as $idx => $item)
+                  <td class="stack" width="50%" valign="top" style="{{ $idx === 0 ? 'padding:0 10px 16px 0;' : 'padding:0 0 16px 10px;' }}">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#ffffff;border:1px solid #e6e6f4;border-radius:14px;overflow:hidden;box-shadow:0 12px 22px rgba(13,13,28,.06);">
                       @if(!empty($item['cover_image_url']))
                         <tr>
                           <td style="padding:0;">
                             <a href="{{ $item['url'] }}" style="text-decoration:none;display:block;">
                               <img src="{{ $item['cover_image_url'] }}"
-                                   alt=""
+                                   alt="{{ $item['title'] }}"
                                    width="300"
                                    style="display:block;width:100%;max-width:300px;height:auto;border:0;outline:none;text-decoration:none;">
                             </a>
@@ -87,20 +93,33 @@
                         </tr>
                       @endif
                       <tr>
-                        <td style="padding:14px 14px 16px 14px;">
-                          @if(!empty($item['category']))
-                            <div style="font-size:12px;font-weight:700;color:#137fec;margin:0 0 6px 0;">
-                              {{ $item['category'] }}
-                            </div>
-                          @endif
-                          <div style="font-size:14px;line-height:1.3;font-weight:800;color:#0f172a;">
-                            <a href="{{ $item['url'] }}" style="color:#0f172a;text-decoration:none;">{{ $item['title'] }}</a>
+                        <td style="padding:16px 16px 18px 16px;">
+                          <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                            <tr>
+                              <td style="font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase;color:{{ $primary }};">
+                                {{ $item['category'] ?? 'Actualité' }}
+                              </td>
+                              <td align="right" style="font-size:12px;color:#9ca3af;font-weight:600;">
+                                —
+                              </td>
+                            </tr>
+                          </table>
+
+                          <div style="margin-top:10px;font-size:16px;line-height:1.3;font-weight:900;color:#0d0d1c;">
+                            <a href="{{ $item['url'] }}" style="color:#0d0d1c;text-decoration:none;">{{ $item['title'] }}</a>
                           </div>
+
                           @if(!empty($item['excerpt']))
-                            <div style="margin-top:8px;font-size:13px;line-height:1.6;color:#64748b;">
+                            <div style="margin-top:10px;font-size:13px;line-height:1.65;color:#6b7280;">
                               {{ $item['excerpt'] }}
                             </div>
                           @endif
+
+                          <div style="margin-top:12px;">
+                            <a href="{{ $item['url'] }}" style="color:{{ $primary }};text-decoration:none;font-weight:800;">
+                              Lire plus ›
+                            </a>
+                          </div>
                         </td>
                       </tr>
                     </table>

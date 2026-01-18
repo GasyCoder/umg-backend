@@ -143,11 +143,17 @@ class NewsletterCampaignAdminController extends Controller
             ];
         }
 
-        $subject = trim((string) ($data['subject'] ?? 'Actualités - ' . now()->format('d/m/Y')));
-        if ($subject === '') $subject = 'Actualités - ' . now()->format('d/m/Y');
+        $week = now()->format('W');
+        $date = now()->format('d/m/Y');
+
+        $defaultSubject = 'Université de Mahajanga — Revue hebdomadaire • S' . $week . ' • ' . $date;
+        $subject = trim((string) ($data['subject'] ?? $defaultSubject));
+        if ($subject === '') $subject = $defaultSubject;
 
         $contentHtml = view('emails.newsletter.digest_content', [
             'posts' => $cards,
+            'issue_label' => 'Semaine ' . $week,
+            'date_label' => $date,
         ])->render();
 
         $campaign = NewsletterCampaign::create([
