@@ -239,6 +239,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/newsletter/campaigns', [NewsletterCampaignAdminController::class, 'index']);
         Route::get('/admin/newsletter/campaigns/{id}', [NewsletterCampaignAdminController::class, 'show']);
         Route::post('/admin/newsletter/campaigns', [NewsletterCampaignAdminController::class, 'store']);
+        Route::post('/admin/newsletter/campaigns/from-posts', [NewsletterCampaignAdminController::class, 'fromPosts']);
         Route::post('/admin/newsletter/campaigns/{id}/send', [NewsletterCampaignAdminController::class, 'send']);
         Route::put('/admin/newsletter/campaigns/{id}', [NewsletterCampaignAdminController::class, 'update']);
         Route::delete('/admin/newsletter/campaigns/{id}', [NewsletterCampaignAdminController::class, 'destroy']);

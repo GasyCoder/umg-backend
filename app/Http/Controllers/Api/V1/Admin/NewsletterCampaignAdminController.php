@@ -7,14 +7,23 @@ use App\Http\Requests\Admin\StoreNewsletterCampaignRequest;
 use App\Http\Resources\NewsletterCampaignResource;
 use App\Jobs\SendNewsletterToSubscriberJob;
 use App\Models\NewsletterCampaign;
+use App\Models\Post;
 use App\Models\NewsletterSend;
 use App\Models\NewsletterSubscriber;
 use App\Support\Audit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class NewsletterCampaignAdminController extends Controller
 {
+    private function absoluteMediaUrl(?string $url): ?string
+    {
+        if (!is_string($url) || $url === '') return null;
+        if (str_starts_with($url, 'http')) return $url;
+        return rtrim((string) config('app.url', ''), '/') . '/' . ltrim($url, '/');
+    }
+
     public function index(Request $request)
     {
         $this->ensureRoleAny($request);
@@ -59,6 +68,164 @@ class NewsletterCampaignAdminController extends Controller
         ]);
 
         return new NewsletterCampaignResource($campaign);
+    }
+
+    /**
+     * POST /v1/admin/newsletter/campaigns/from-posts
+     * - crée une campagne à partir de plusieurs articles (cards)
+     * - optionnellement envoie immédiatement (send_now=true par défaut)
+     */
+    public function fromPosts(Request $request)
+    {
+        $this->ensureRoleSend($request);
+
+        $data = $request->validate([
+            'post_ids' => ['required', 'array', 'min:1', 'max:20'],
+            'post_ids.*' => ['integer', 'distinct', 'min:1'],
+            'subject' => ['sometimes', 'string', 'max:255'],
+            'send_now' => ['sometimes', 'boolean'],
+        ]);
+
+        $postIds = array_values(array_unique(array_map('intval', $data['post_ids'] ?? [])));
+        if (count($postIds) === 0) {
+            return response()->json(['message' => 'post_ids is required.'], 422);
+        }
+
+        $frontendBase = rtrim((string) config('app.frontend_url', 'http://localhost:3000'), '/');
+
+        $postsById = Post::query()
+            ->whereIn('id', $postIds)
+            ->with(['coverImage', 'categories'])
+            ->get()
+            ->keyBy('id');
+
+        $missing = array_values(array_diff($postIds, $postsById->keys()->all()));
+        if (count($missing)) {
+            return response()->json([
+                'message' => 'Some posts were not found.',
+                'code' => 'POSTS_NOT_FOUND',
+                'data' => ['missing_ids' => $missing],
+            ], 422);
+        }
+
+        $invalid = [];
+        foreach ($postIds as $id) {
+            $p = $postsById[$id];
+            if ($p->status !== 'published' || !$p->published_at) {
+                $invalid[] = $p->id;
+            }
+        }
+        if (count($invalid)) {
+            return response()->json([
+                'message' => 'Only published posts can be sent.',
+                'code' => 'POSTS_NOT_PUBLISHED',
+                'data' => ['invalid_ids' => $invalid],
+            ], 422);
+        }
+
+        $cards = [];
+        foreach ($postIds as $id) {
+            $p = $postsById[$id];
+            $url = $frontendBase . '/actualites/' . ltrim((string) $p->slug, '/');
+            $excerpt = $p->excerpt ?: Str::limit(trim(preg_replace('/\s+/u', ' ', strip_tags((string) $p->content_html))), 160);
+            $category = $p->categories?->first()?->name;
+
+            $coverUrl = $p->coverImage?->url;
+            $coverUrl = $this->absoluteMediaUrl(is_string($coverUrl) ? $coverUrl : null);
+
+            $cards[] = [
+                'id' => $p->id,
+                'title' => $p->title,
+                'url' => $url,
+                'excerpt' => $excerpt,
+                'category' => $category,
+                'cover_image_url' => $coverUrl,
+            ];
+        }
+
+        $subject = trim((string) ($data['subject'] ?? 'Actualités - ' . now()->format('d/m/Y')));
+        if ($subject === '') $subject = 'Actualités - ' . now()->format('d/m/Y');
+
+        $contentHtml = view('emails.newsletter.digest_content', [
+            'posts' => $cards,
+        ])->render();
+
+        $campaign = NewsletterCampaign::create([
+            'subject' => $subject,
+            'content_html' => $contentHtml,
+            'content_text' => null,
+            'status' => 'draft',
+            'post_id' => null,
+            'created_by' => $request->user()->id,
+        ]);
+
+        $sendNow = (bool) ($data['send_now'] ?? true);
+        if (!$sendNow) {
+            return new NewsletterCampaignResource($campaign);
+        }
+
+        $updated = NewsletterCampaign::query()
+            ->where('id', $campaign->id)
+            ->where('status', 'draft')
+            ->update(['status' => 'sending']);
+
+        if ($updated === 0) {
+            return response()->json([
+                'message' => 'Campaign must be draft to send.',
+                'code' => 'CAMPAIGN_NOT_DRAFT',
+            ], 409);
+        }
+
+        $queuedCount = 0;
+
+        DB::transaction(function () use ($campaign, &$queuedCount) {
+            NewsletterSubscriber::query()
+                ->where('status', 'active')
+                ->select(['id'])
+                ->orderBy('id')
+                ->chunkById(500, function ($subs) use ($campaign, &$queuedCount) {
+                    $rows = [];
+                    foreach ($subs as $s) {
+                        $rows[] = [
+                            'newsletter_campaign_id' => $campaign->id,
+                            'newsletter_subscriber_id' => $s->id,
+                            'status' => 'queued',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ];
+                    }
+                    $queuedCount += count($rows);
+                    NewsletterSend::query()->insertOrIgnore($rows);
+                });
+        });
+
+        // Dispatch jobs
+        NewsletterSend::query()
+            ->where('newsletter_campaign_id', $campaign->id)
+            ->where('status', 'queued')
+            ->select(['id'])
+            ->orderBy('id')
+            ->chunkById(500, function ($sends) {
+                foreach ($sends as $send) {
+                    SendNewsletterToSubscriberJob::dispatch($send->id);
+                }
+            });
+
+        Audit::log($request, 'newsletter.campaign.send', 'NewsletterCampaign', $campaign->id, [
+            'campaign_id' => $campaign->id,
+            'source' => 'posts',
+            'posts_count' => count($postIds),
+        ]);
+
+        return response()->json([
+            'data' => true,
+            'meta' => [
+                'newsletter' => [
+                    'campaign_id' => $campaign->id,
+                    'queued' => $queuedCount,
+                ],
+            ],
+        ]);
     }
 
     /**
