@@ -12,6 +12,7 @@ class DatabaseSeeder extends Seeder
             RolesAndAdminSeeder::class,
             CoreTaxonomySeeder::class,
             OrganizationContentSeeder::class,
+            HistoriqueContentSeeder::class,
             ProjectsSeeder::class,
         ]);
     }
