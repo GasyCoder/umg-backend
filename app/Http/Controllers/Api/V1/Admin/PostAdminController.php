@@ -50,6 +50,7 @@ class PostAdminController extends Controller
             'cover_image_id' => $data['cover_image_id'] ?? null,
             'is_featured' => (bool)($data['is_featured'] ?? false),
             'is_pinned' => (bool)($data['is_pinned'] ?? false),
+            'is_important' => (bool)($data['is_important'] ?? false),
             'seo_title' => $data['seo_title'] ?? null,
             'seo_description' => $data['seo_description'] ?? null,
         ]);
@@ -102,6 +103,7 @@ class PostAdminController extends Controller
             'cover_image_id' => $data['cover_image_id'] ?? $post->cover_image_id,
             'is_featured' => (bool)($data['is_featured'] ?? $post->is_featured),
             'is_pinned' => (bool)($data['is_pinned'] ?? $post->is_pinned),
+            'is_important' => (bool)($data['is_important'] ?? $post->is_important),
             'seo_title' => $data['seo_title'] ?? $post->seo_title,
             'seo_description' => $data['seo_description'] ?? $post->seo_description,
         ]);

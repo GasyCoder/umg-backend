@@ -43,6 +43,7 @@ class UpdatePostRequest extends FormRequest
 
             'is_featured' => ['sometimes','boolean'],
             'is_pinned' => ['sometimes','boolean'],
+            'is_important' => ['sometimes','boolean'],
 
             'seo_title' => ['nullable','string','max:255'],
             'seo_description' => ['nullable','string','max:255'],

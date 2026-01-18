@@ -21,6 +21,10 @@ class PostResource extends JsonResource
 
             'is_featured' => (bool) $this->is_featured,
             'is_pinned' => (bool) $this->is_pinned,
+            'is_important' => (bool) $this->is_important,
+
+            'views_count' => (int) ($this->views_count ?? 0),
+            'unique_views_count' => (int) ($this->unique_views_count ?? 0),
 
             'seo_title' => $this->seo_title,
             'seo_description' => $this->seo_description,

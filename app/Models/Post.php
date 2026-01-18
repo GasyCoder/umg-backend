@@ -17,7 +17,9 @@ class Post extends Model
     protected $fillable = [
         'title','slug','excerpt','content_html','content_markdown','status','published_at',
         'author_id','validated_by','validated_at','cover_image_id',
-        'is_featured','is_slide','is_pinned','seo_title','seo_description'
+        'is_featured','is_slide','is_pinned','is_important',
+        'views_count','unique_views_count',
+        'seo_title','seo_description'
     ];
 
     protected $casts = [
@@ -26,6 +28,7 @@ class Post extends Model
         'is_featured' => 'boolean',
         'is_slide' => 'boolean',
         'is_pinned' => 'boolean',
+        'is_important' => 'boolean',
     ];
 
     public function author() { return $this->belongsTo(User::class, 'author_id'); }
