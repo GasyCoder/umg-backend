@@ -111,6 +111,10 @@ Route::prefix('v1')->group(function () {
     Route::post('/newsletter/unsubscribe', [NewsletterPublicController::class, 'unsubscribe'])
         ->middleware('throttle:newsletter');
 
+    Route::options('/contact', function () {
+        return response()->json();
+    });
+
     Route::post('/contact', [ContactPublicController::class, 'send'])
         ->middleware('throttle:contact');
 
