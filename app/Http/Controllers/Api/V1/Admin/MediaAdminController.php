@@ -17,11 +17,24 @@ class MediaAdminController extends Controller
     {
         $per = min((int) $request->get('per_page', 50), 100);
         $q = Media::query()
-            ->select(['id', 'disk', 'path', 'mime', 'size', 'alt', 'width', 'height', 'created_at'])
+            ->select(['id', 'disk', 'path', 'mime', 'size', 'alt', 'width', 'height', 'created_at', 'name', 'type', 'parent_id'])
             ->latest();
 
         if ($type = $request->get('type')) {
             $q->where('mime', 'like', $type . '%');
+        }
+
+        $parentId = $request->get('parent_id');
+        if ($parentId === 'root' || !$parentId) {
+            $q->whereNull('parent_id');
+        } else {
+            $q->where('parent_id', $parentId);
+        }
+
+        if ($categoryId = $request->get('category_id')) {
+            $q->whereHas('categories', function ($query) use ($categoryId) {
+                $query->where('categories.id', $categoryId);
+            });
         }
 
         return MediaResource::collection($q->paginate($per));
@@ -40,6 +53,9 @@ class MediaAdminController extends Controller
             'file' => ['required','file','max:512000'],
             'alt' => ['nullable','string','max:255'],
             'disk' => ['nullable','in:public,private'],
+            'parent_id' => ['nullable', 'exists:media,id'],
+            'category_ids' => ['nullable', 'array'],
+            'category_ids.*' => ['exists:categories,id'],
         ]);
 
         $disk = $validated['disk'] ?? 'public';
@@ -67,13 +83,39 @@ class MediaAdminController extends Controller
         $media = Media::create([
             'disk' => $disk,
             'path' => $path,
+            'name' => $file->getClientOriginalName(),
+            'type' => 'file',
             'mime' => $mime,
             'size' => $size,
             'alt' => $validated['alt'] ?? null,
             'created_by' => $request->user()->id,
+            'parent_id' => $validated['parent_id'] ?? null,
         ]);
 
+        if (!empty($validated['category_ids'])) {
+            $media->categories()->sync($validated['category_ids']);
+        }
+
         return new MediaResource($media);
+    }
+
+    public function storeFolder(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'parent_id' => ['nullable', 'exists:media,id'],
+        ]);
+
+        $folder = Media::create([
+            'name' => $validated['name'],
+            'type' => 'folder',
+            'disk' => 'public',
+            'path' => '', // Folders don't have a path in the same way files do
+            'created_by' => $request->user()->id,
+            'parent_id' => $validated['parent_id'] ?? null,
+        ]);
+
+        return new MediaResource($folder);
     }
 
     public function destroy(int $id)

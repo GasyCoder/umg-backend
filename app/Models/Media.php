@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Media extends Model
 {
@@ -14,6 +17,7 @@ class Media extends Model
 
     protected $fillable = [
         'disk', 'path', 'mime', 'size', 'alt', 'width', 'height', 'created_by',
+        'name', 'type', 'parent_id',
     ];
 
     protected $casts = [
@@ -21,6 +25,7 @@ class Media extends Model
         'width' => 'integer',
         'height' => 'integer',
         'created_by' => 'integer',
+        'parent_id' => 'integer',
     ];
 
     protected $appends = ['url'];
@@ -30,8 +35,23 @@ class Media extends Model
         return Storage::disk($this->disk)->url($this->path);
     }
 
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Media::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Media::class, 'parent_id');
+    }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'category_media');
     }
 }

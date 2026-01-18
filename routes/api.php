@@ -139,6 +139,7 @@ Route::prefix('v1')->group(function () {
         */
         Route::get('/admin/media', [MediaAdminController::class, 'index']);
         Route::post('/admin/media', [MediaAdminController::class, 'store']);
+        Route::post('/admin/media/folders', [MediaAdminController::class, 'storeFolder']);
         Route::get('/admin/media/{id}', [MediaAdminController::class, 'show']);
         Route::delete('/admin/media/{id}', [MediaAdminController::class, 'destroy']);
 
