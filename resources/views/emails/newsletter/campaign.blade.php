@@ -17,6 +17,15 @@
         {!! $campaign->content_html !!}
       </div>
 
+      @if(!empty($readMoreUrl))
+        <div style="padding:0 20px 18px;">
+          <a href="{{ $readMoreUrl }}"
+             style="display:inline-block;background:#2563eb;color:#ffffff;text-decoration:none;padding:12px 16px;border-radius:10px;font-weight:700;font-size:14px;">
+            En savoir plus
+          </a>
+        </div>
+      @endif
+
       <div style="padding:14px 20px;border-top:1px solid #e9ecf3;color:#6b7280;font-size:12px;">
         <div>Vous recevez cet email car vous êtes abonné(e) à la newsletter.</div>
         <div style="margin-top:6px;">

@@ -19,8 +19,16 @@ class NewsletterCampaignMail extends Mailable
 
     public function build()
     {
+        $frontendBase = rtrim((string) config('app.frontend_url', 'http://localhost:3000'), '/');
+
         $unsubscribeUrl = rtrim((string) config('app.frontend_url', 'http://localhost:3000'), '/')
             . '/newsletter/unsubscribe?token=' . $this->subscriber->token;
+
+        $post = $this->campaign->post;
+        $readMoreUrl = null;
+        if ($post && is_string($post->slug) && $post->slug !== '') {
+            $readMoreUrl = $frontendBase . '/actualites/' . ltrim($post->slug, '/');
+        }
 
         return $this->subject($this->campaign->subject)
             ->view('emails.newsletter.campaign')
@@ -28,6 +36,7 @@ class NewsletterCampaignMail extends Mailable
                 'campaign' => $this->campaign,
                 'subscriber' => $this->subscriber,
                 'unsubscribeUrl' => $unsubscribeUrl,
+                'readMoreUrl' => $readMoreUrl,
             ]);
     }
 }
