@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\Admin\NewsletterCampaignAdminController;
 use App\Http\Controllers\Api\V1\Admin\NewsletterSubscriberAdminController;
 use App\Http\Controllers\Api\V1\Admin\PartnerAdminController;
 use App\Http\Controllers\Api\V1\Admin\PostAdminController;
+use App\Http\Controllers\Api\V1\Admin\ProjectAdminController;
 use App\Http\Controllers\Api\V1\Admin\TagAdminController;
 use App\Http\Controllers\Api\V1\Admin\EtablissementAdminController;
 use App\Http\Controllers\Api\V1\Admin\OrganizationPageAdminController;
@@ -30,6 +31,7 @@ use App\Http\Controllers\Api\V1\Public\NewsletterPublicController;
 use App\Http\Controllers\Api\V1\Public\ContactPublicController;
 use App\Http\Controllers\Api\V1\Public\PartnerPublicController;
 use App\Http\Controllers\Api\V1\Public\PostPublicController;
+use App\Http\Controllers\Api\V1\Public\ProjectPublicController;
 use App\Http\Controllers\Api\V1\Public\TagPublicController;
 use App\Http\Controllers\Api\V1\PublicApi\EtablissementController;
 use App\Http\Controllers\Api\V1\PublicApi\OrganizationPageController;
@@ -63,6 +65,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/documents/{id}/download', DocumentDownloadPublicController::class);
 
     Route::get('/partners', [PartnerPublicController::class, 'index']);
+
+    // Projects (public)
+    Route::get('/projects', [ProjectPublicController::class, 'index']);
+    Route::get('/projects/{slug}', [ProjectPublicController::class, 'show']);
 
     // Slides (public)
     Route::get('/slides', [SlidePublicController::class, 'index']);
@@ -192,6 +198,17 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/partners/{id}', [PartnerAdminController::class, 'show']);
         Route::put('/admin/partners/{id}', [PartnerAdminController::class, 'update']);
         Route::delete('/admin/partners/{id}', [PartnerAdminController::class, 'destroy']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADMIN: PROJECTS
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/admin/projects', [ProjectAdminController::class, 'index']);
+        Route::post('/admin/projects', [ProjectAdminController::class, 'store']);
+        Route::get('/admin/projects/{id}', [ProjectAdminController::class, 'show']);
+        Route::match(['put', 'post'], '/admin/projects/{id}', [ProjectAdminController::class, 'update']);
+        Route::delete('/admin/projects/{id}', [ProjectAdminController::class, 'destroy']);
 
         /*
         |--------------------------------------------------------------------------
