@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1\Public;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
+use App\Models\Post;
 use Illuminate\Http\Request;
 
 class CategoryPublicController extends Controller
@@ -18,6 +19,11 @@ class CategoryPublicController extends Controller
 
         $q = Category::query()
             ->type($type)
+            ->withCount([
+                'posts' => fn($posts) => $posts
+                    ->where('status', Post::STATUS_PUBLISHED)
+                    ->whereNotNull('published_at'),
+            ])
             ->orderBy('name');
 
         // Option: parent only (useful if you want tree client-side)
