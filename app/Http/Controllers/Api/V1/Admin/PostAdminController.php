@@ -70,7 +70,9 @@ class PostAdminController extends Controller
         }
 
         if (($data['notify_subscribers'] ?? false) && $post->status === 'published') {
-            $this->sendNewsletterForPost($post, $request->user());
+            $newsletterMeta = $this->sendNewsletterForPost($post, $request->user());
+            return (new PostResource($post->load(['coverImage','categories','tags','gallery','author'])))
+                ->additional(['meta' => ['newsletter' => $newsletterMeta]]);
         }
 
         return new PostResource($post->load(['coverImage','categories','tags','gallery','author']));
@@ -133,6 +135,12 @@ class PostAdminController extends Controller
             $post->gallery()->sync($sync);
         }
 
+        if (($data['notify_subscribers'] ?? false) && $nextStatus === 'published') {
+            $newsletterMeta = $this->sendNewsletterForPost($post, $request->user());
+            return (new PostResource($post->load(['coverImage','categories','tags','gallery','author'])))
+                ->additional(['meta' => ['newsletter' => $newsletterMeta]]);
+        }
+
         return new PostResource($post->load(['coverImage','categories','tags','gallery','author']));
     }
 
@@ -192,7 +200,7 @@ class PostAdminController extends Controller
         return new PostResource($post);
     }
 
-    private function sendNewsletterForPost(Post $post, $user)
+    private function sendNewsletterForPost(Post $post, $user): array
     {
         $campaign = NewsletterCampaign::create([
             'subject' => $post->title,
@@ -204,12 +212,14 @@ class PostAdminController extends Controller
 
         $campaign->update(['status' => 'sending']);
 
-        DB::transaction(function () use ($campaign) {
+        $queuedCount = 0;
+
+        DB::transaction(function () use ($campaign, &$queuedCount) {
             NewsletterSubscriber::query()
                 ->where('status', 'active')
                 ->select(['id'])
                 ->orderBy('id')
-                ->chunkById(500, function ($subs) use ($campaign) {
+                ->chunkById(500, function ($subs) use ($campaign, &$queuedCount) {
                     $rows = [];
                     foreach ($subs as $s) {
                         $rows[] = [
@@ -220,9 +230,21 @@ class PostAdminController extends Controller
                             'updated_at' => now(),
                         ];
                     }
+                    $queuedCount += count($rows);
                     NewsletterSend::query()->insertOrIgnore($rows);
                 });
         });
+
+        if ($queuedCount === 0) {
+            $campaign->update([
+                'status' => 'sent',
+                'sent_at' => now(),
+            ]);
+            return [
+                'campaign_id' => $campaign->id,
+                'queued' => 0,
+            ];
+        }
 
         NewsletterSend::query()
             ->where('newsletter_campaign_id', $campaign->id)
@@ -234,5 +256,10 @@ class PostAdminController extends Controller
                     SendNewsletterToSubscriberJob::dispatch($send->id);
                 }
             });
+
+        return [
+            'campaign_id' => $campaign->id,
+            'queued' => $queuedCount,
+        ];
     }
 }
