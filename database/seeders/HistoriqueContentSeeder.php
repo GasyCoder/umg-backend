@@ -14,11 +14,19 @@ class HistoriqueContentSeeder extends Seeder
         OrganizationPage::updateOrCreate(
             ['slug' => 'historique-introduction'],
             [
-                'title' => 'Présentation de l\'Université',
+                'title' => 'Historique de l\'Université de Mahajanga',
                 'content' => '<div class="space-y-4">
 <p class="text-lg leading-relaxed">L\'Université de Mahajanga est régie par le <strong>Décret 2002-565 du 04 juillet 2002</strong>. Elle dispose actuellement de 2 Facultés, 5 Instituts, 4 Écoles, 1 unité de Formation et de Recherche, 1 Musée régional et 3 Écoles doctorales.</p>
 
-<p class="leading-relaxed">La diversification de ces formations vise à répondre aux besoins nationaux en compétence professionnelle et également à permettre l\'accès aux jeunes à des études approfondies. L\'Université de Mahajanga donne aux étudiants un ample choix de parcours de formation et de professionnalisation.</p>
+<p class="leading-relaxed">La diversification de ces formations vise à répondre aux besoins nationaux en compétence professionnelle et également à permettre l\'accès aux jeunes à des études approfondies. L\'Université de Mahajanga donne aux étudiants un ample choix de parcours de formation et de professionnalisation. En effet, elle offre un éventail d\'études pluridisciplinaires qui ont pour objectif de former les étudiants sur un large spectre de connaissances et d\'entretenir une formation actualisée.</p>
+
+<p class="leading-relaxed">L\'Université de Madagascar trouve son origine dans la création, dès 1896, d\'une école de médecine à Befalatana, puis d\'écoles de droit, de sciences et de lettres. En 1960 la réunion de ces établissements est érigée en université mais c\'est par l\'ordonnance du 27 décembre 1976 que l\'Université de Madagascar est définie dans ses nouvelles structures : démocratisation de l\'accès à l\'enseignement supérieur, malgachisation et décentralisation.</p>
+
+<p class="leading-relaxed">La loi du 17 juillet 1978 fixe le cadre général du système d\'éducation et de formation. Il était créé en 1977, dans chaque chef-lieu des six provinces de Madagascar, un Centre universitaire régional (CUR). L\'ensemble des six CUR formait l\'Université de Madagascar.</p>
+
+<p class="leading-relaxed">Depuis le 7 octobre 1988, chacun des six CUR a été érigé au rang d\'université autonome et indépendante. Madagascar possède ainsi actuellement six universités au lieu d\'une seule comme auparavant.</p>
+
+<p class="leading-relaxed"><strong>L\'Université de Mahajanga est née de cette décentralisation.</strong></p>
 </div>',
                 'page_type' => 'historique',
                 'order' => 1,
