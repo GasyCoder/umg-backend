@@ -61,4 +61,19 @@ class PostPolicy
         return $user->hasAnyRole(['SuperAdmin','Validateur'])
             && $post->status === 'published';
     }
+
+    public function draft(User $user, Post $post): bool
+    {
+        if ($user->hasRole('SuperAdmin')) return true;
+
+        if ($user->hasRole('Validateur')) {
+            return in_array($post->status, ['published','archived'], true);
+        }
+
+        if ($user->hasRole('Redacteur')) {
+            return $post->author_id === $user->id && $post->status === 'published';
+        }
+
+        return false;
+    }
 }

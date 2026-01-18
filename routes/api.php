@@ -152,6 +152,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/admin/posts/{id}/approve', [PostAdminController::class, 'approve']);
         Route::post('/admin/posts/{id}/reject', [PostAdminController::class, 'reject']);
         Route::post('/admin/posts/{id}/archive', [PostAdminController::class, 'archive']);
+        Route::post('/admin/posts/{id}/draft', [PostAdminController::class, 'draft']);
 
         /*
         |--------------------------------------------------------------------------

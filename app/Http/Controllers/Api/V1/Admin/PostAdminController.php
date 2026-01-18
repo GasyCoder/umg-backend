@@ -200,6 +200,19 @@ class PostAdminController extends Controller
         return new PostResource($post);
     }
 
+    public function draft(int $id, Request $request)
+    {
+        $post = Post::findOrFail($id);
+        $this->authorize('draft', $post);
+
+        $post->update([
+            'status' => 'draft',
+            'published_at' => null,
+        ]);
+
+        return new PostResource($post);
+    }
+
     private function sendNewsletterForPost(Post $post, $user): array
     {
         $campaign = NewsletterCampaign::create([
