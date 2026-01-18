@@ -30,7 +30,7 @@ class NewsletterPublicController extends Controller
 
         // Send verification email
         // Frontend URL: http://localhost:3000/newsletter/verify?token=...
-        $frontendUrl = env('FRONTEND_URL', 'http://localhost:3000');
+        $frontendUrl = rtrim((string) config('app.frontend_url', 'http://localhost:3000'), '/');
         $verificationUrl = $frontendUrl . '/newsletter/verify?token=' . $subscriber->token;
 
         try {

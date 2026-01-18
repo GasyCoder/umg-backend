@@ -54,7 +54,10 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
-    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+    // Single base URL of the frontend (used for links in emails).
+    // If FRONTEND_URL is mistakenly configured as a comma-separated list,
+    // we safely take the first entry.
+    'frontend_url' => trim(explode(',', env('FRONTEND_URL', env('FRONTEND_URLS', 'http://localhost:3000')))[0]),
 
     /*
     |--------------------------------------------------------------------------

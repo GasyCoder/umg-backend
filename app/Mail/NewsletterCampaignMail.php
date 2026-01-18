@@ -19,7 +19,7 @@ class NewsletterCampaignMail extends Mailable
 
     public function build()
     {
-        $unsubscribeUrl = rtrim(config('app.frontend_url', env('FRONTEND_URL')), '/')
+        $unsubscribeUrl = rtrim((string) config('app.frontend_url', 'http://localhost:3000'), '/')
             . '/newsletter/unsubscribe?token=' . $this->subscriber->token;
 
         return $this->subject($this->campaign->subject)
