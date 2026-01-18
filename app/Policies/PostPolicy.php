@@ -76,4 +76,19 @@ class PostPolicy
 
         return false;
     }
+
+    public function publish(User $user, Post $post): bool
+    {
+        if ($user->hasRole('SuperAdmin')) return true;
+
+        if ($user->hasRole('Validateur')) {
+            return in_array($post->status, ['draft','pending','archived'], true);
+        }
+
+        if ($user->hasRole('Redacteur')) {
+            return $post->author_id === $user->id && $post->status === 'draft';
+        }
+
+        return false;
+    }
 }

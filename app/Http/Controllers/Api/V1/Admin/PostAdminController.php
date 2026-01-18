@@ -213,6 +213,26 @@ class PostAdminController extends Controller
         return new PostResource($post);
     }
 
+    public function publish(int $id, Request $request)
+    {
+        $post = Post::findOrFail($id);
+        $this->authorize('publish', $post);
+
+        $update = [
+            'status' => 'published',
+            'published_at' => now(),
+        ];
+
+        if ($request->user()?->hasAnyRole(['SuperAdmin','Validateur'])) {
+            $update['validated_by'] = $request->user()->id;
+            $update['validated_at'] = now();
+        }
+
+        $post->update($update);
+
+        return new PostResource($post);
+    }
+
     private function sendNewsletterForPost(Post $post, $user): array
     {
         $campaign = NewsletterCampaign::create([
