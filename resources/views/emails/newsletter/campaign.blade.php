@@ -6,6 +6,17 @@
   <title>{{ $campaign->subject }}</title>
   <meta name="x-apple-disable-message-reformatting">
   <style>
+    /* Content safety (avoid overflow) */
+    .content, .content * { box-sizing: border-box; }
+    .content { overflow-wrap: anywhere; word-break: break-word; }
+    .content img { max-width: 100% !important; height: auto !important; }
+    .content table { width: 100% !important; max-width: 100% !important; }
+    .content pre { white-space: pre-wrap !important; word-break: break-word !important; max-width: 100% !important; overflow: auto !important; }
+    .content a { color: #2563eb; text-decoration: none; word-break: break-word; }
+    .ql-align-center { text-align: center; }
+    .ql-align-right { text-align: right; }
+    .ql-align-justify { text-align: justify; }
+
     @media screen and (max-width: 620px) {
       .container { width: 100% !important; }
       .px { padding-left: 16px !important; padding-right: 16px !important; }
@@ -82,8 +93,8 @@
               {{-- Content --}}
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td class="px" style="padding:18px 24px 10px 24px;font-size:15px;line-height:1.75;color:#111827;">
-                    {!! $campaign->content_html !!}
+                  <td class="px content" style="padding:18px 24px 10px 24px;font-size:15px;line-height:1.75;color:#111827;overflow-wrap:anywhere;word-break:break-word;">
+                    {!! $contentHtmlEmail !!}
                   </td>
                 </tr>
               </table>
