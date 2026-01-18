@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 
 class PostPublicController extends Controller
 {
+    private const VIEW_SESSION_COOKIE = 'umg_post_view_sess';
+
     public function index(Request $request)
     {
         $q = Post::query()
@@ -59,7 +62,7 @@ class PostPublicController extends Controller
         return PostResource::collection($q->paginate($per));
     }
 
-    public function show(Request $request, string $slug)
+    public function show(string $slug)
     {
         $post = Post::query()
             ->where('slug', $slug)
@@ -68,26 +71,42 @@ class PostPublicController extends Controller
             ->with(['coverImage','categories','tags','gallery','author'])
             ->firstOrFail();
 
-        $ip = (string) ($request->ip() ?? '');
-        $ua = (string) ($request->userAgent() ?? '');
-        $key = (string) config('app.key');
-        $visitorHash = hash_hmac('sha256', $ip . '|' . $ua, $key);
+        return new PostResource($post);
+    }
 
-        Post::query()->whereKey($post->id)->increment('views_count');
-        $post->setAttribute('views_count', ((int) ($post->views_count ?? 0)) + 1);
+    /**
+     * POST /v1/posts/{slug}/view
+     * Counts at most 1 view per browser session (cookie).
+     */
+    public function view(Request $request, string $slug)
+    {
+        $post = Post::query()
+            ->where('slug', $slug)
+            ->where('status', 'published')
+            ->whereNotNull('published_at')
+            ->firstOrFail();
+
+        $sessionId = (string) $request->cookie(self::VIEW_SESSION_COOKIE, '');
+        if ($sessionId === '') {
+            $sessionId = Str::random(40);
+        }
 
         $inserted = DB::table('post_views')->insertOrIgnore([
             'post_id' => $post->id,
-            'visitor_hash' => $visitorHash,
+            'visitor_hash' => $sessionId,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
 
         if ($inserted) {
+            Post::query()->whereKey($post->id)->increment('views_count');
             Post::query()->whereKey($post->id)->increment('unique_views_count');
-            $post->setAttribute('unique_views_count', ((int) ($post->unique_views_count ?? 0)) + 1);
         }
 
-        return new PostResource($post);
+        $fresh = Post::query()->select(['id','views_count','unique_views_count'])->findOrFail($post->id);
+
+        return (new PostResource($fresh))
+            ->response()
+            ->cookie(self::VIEW_SESSION_COOKIE, $sessionId, 0, null, null, $request->isSecure(), true, false, 'lax');
     }
 }

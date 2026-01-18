@@ -55,6 +55,7 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/posts', [PostPublicController::class, 'index']);
     Route::get('/posts/{slug}', [PostPublicController::class, 'show']);
+    Route::post('/posts/{slug}/view', [PostPublicController::class, 'view']);
 
     Route::get('/categories', [CategoryPublicController::class, 'index']);
     Route::get('/tags', [TagPublicController::class, 'index']);
