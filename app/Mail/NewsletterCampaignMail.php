@@ -19,6 +19,8 @@ class NewsletterCampaignMail extends Mailable
 
     public function build()
     {
+        $this->campaign->loadMissing(['post.coverImage']);
+
         $frontendBase = rtrim((string) config('app.frontend_url', 'http://localhost:3000'), '/');
 
         $unsubscribeUrl = rtrim((string) config('app.frontend_url', 'http://localhost:3000'), '/')
@@ -30,6 +32,16 @@ class NewsletterCampaignMail extends Mailable
             $readMoreUrl = $frontendBase . '/actualites/' . ltrim($post->slug, '/');
         }
 
+        $coverImageUrl = null;
+        $coverImageAlt = null;
+        if ($post && $post->coverImage) {
+            $coverImageAlt = $post->coverImage->alt ?: $post->title;
+            $coverImageUrl = $post->coverImage->url;
+            if (is_string($coverImageUrl) && $coverImageUrl !== '' && !str_starts_with($coverImageUrl, 'http')) {
+                $coverImageUrl = rtrim((string) config('app.url', ''), '/') . '/' . ltrim($coverImageUrl, '/');
+            }
+        }
+
         return $this->subject($this->campaign->subject)
             ->view('emails.newsletter.campaign')
             ->with([
@@ -37,6 +49,10 @@ class NewsletterCampaignMail extends Mailable
                 'subscriber' => $this->subscriber,
                 'unsubscribeUrl' => $unsubscribeUrl,
                 'readMoreUrl' => $readMoreUrl,
+                'coverImageUrl' => $coverImageUrl,
+                'coverImageAlt' => $coverImageAlt,
+                'postExcerpt' => $post?->excerpt,
+                'frontendBase' => $frontendBase,
             ]);
     }
 }
