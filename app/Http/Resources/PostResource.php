@@ -6,6 +6,19 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class PostResource extends JsonResource
 {
+    private function readingTimeMinutes(): ?int
+    {
+        $raw = $this->content_markdown ?: strip_tags((string) $this->content_html);
+        $text = trim(preg_replace('/\s+/', ' ', (string) $raw));
+        if ($text === '') return null;
+
+        $words = preg_split('/\s+/', $text) ?: [];
+        $count = count(array_filter($words, fn($w) => $w !== ''));
+
+        // ~200 words / min
+        return max(1, (int) ceil($count / 200));
+    }
+
     public function toArray($request): array
     {
         return [
@@ -15,6 +28,7 @@ class PostResource extends JsonResource
             'excerpt' => $this->excerpt,
             'content_html' => $this->content_html,
             'content_markdown' => $this->content_markdown,
+            'reading_time' => $this->readingTimeMinutes(),
 
             'status' => $this->status,
             'published_at' => $this->published_at?->toISOString(),
