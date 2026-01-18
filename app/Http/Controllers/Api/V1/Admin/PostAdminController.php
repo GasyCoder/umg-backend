@@ -44,6 +44,7 @@ class PostAdminController extends Controller
             'excerpt' => $data['excerpt'] ?? null,
             'content_html' => $data['content_html'],
             'status' => $data['status'] ?? 'draft',
+            'published_at' => (($data['status'] ?? 'draft') === 'published') ? now() : null,
             'author_id' => $request->user()->id,
             'cover_image_id' => $data['cover_image_id'] ?? null,
             'is_featured' => (bool)($data['is_featured'] ?? false),

@@ -17,6 +17,13 @@ class PostPublicController extends Controller
             ->with(['coverImage','categories','tags'])
             ->orderByDesc('published_at');
 
+        if ($request->filled('exclude')) {
+            $excludeId = (int) $request->get('exclude');
+            if ($excludeId > 0) {
+                $q->where('id', '!=', $excludeId);
+            }
+        }
+
         if ($request->filled('q')) {
             $term = $request->string('q')->toString();
             $q->where(fn($w) => $w->where('title','like',"%$term%")->orWhere('excerpt','like',"%$term%"));
@@ -27,7 +34,13 @@ class PostPublicController extends Controller
             $q->whereHas('categories', fn($c) => $c->where('slug', $slug));
         }
 
-        if ($request->filled('tag')) {
+        $tagsParam = $request->string('tags')->toString();
+        if ($tagsParam !== '') {
+            $slugs = array_values(array_filter(array_map('trim', explode(',', $tagsParam))));
+            if (count($slugs)) {
+                $q->whereHas('tags', fn($t) => $t->whereIn('slug', $slugs));
+            }
+        } elseif ($request->filled('tag')) {
             $slug = $request->string('tag')->toString();
             $q->whereHas('tags', fn($t) => $t->where('slug', $slug));
         }
@@ -49,6 +62,7 @@ class PostPublicController extends Controller
         $post = Post::query()
             ->where('slug', $slug)
             ->where('status', 'published')
+            ->whereNotNull('published_at')
             ->with(['coverImage','categories','tags','gallery','author'])
             ->firstOrFail();
 
