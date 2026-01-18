@@ -14,6 +14,7 @@ class PostResource extends JsonResource
             'slug' => $this->slug,
             'excerpt' => $this->excerpt,
             'content_html' => $this->content_html,
+            'content_markdown' => $this->content_markdown,
 
             'status' => $this->status,
             'published_at' => $this->published_at?->toISOString(),

@@ -15,7 +15,7 @@ class Post extends Model
     const STATUS_ARCHIVED = 'archived';
 
     protected $fillable = [
-        'title','slug','excerpt','content_html','status','published_at',
+        'title','slug','excerpt','content_html','content_markdown','status','published_at',
         'author_id','validated_by','validated_at','cover_image_id',
         'is_featured','is_slide','is_pinned','seo_title','seo_description'
     ];

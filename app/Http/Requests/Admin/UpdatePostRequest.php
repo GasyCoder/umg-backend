@@ -26,6 +26,7 @@ class UpdatePostRequest extends FormRequest
             'slug' => ['sometimes','string','max:255'],
             'excerpt' => ['nullable','string'],
             'content_html' => ['sometimes','required','string'],
+            'content_markdown' => ['nullable','string'],
 
             'cover_image_id' => ['nullable','exists:media,id'],
 

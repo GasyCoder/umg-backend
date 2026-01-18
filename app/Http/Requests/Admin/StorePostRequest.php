@@ -17,6 +17,7 @@ class StorePostRequest extends FormRequest
             'title' => ['required','string','max:255'],
             'excerpt' => ['nullable','string'],
             'content_html' => ['required','string'],
+            'content_markdown' => ['nullable','string'],
 
             'cover_image_id' => ['nullable','exists:media,id'],
 
