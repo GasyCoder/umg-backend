@@ -54,6 +54,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/health', HealthPublicController::class);
 
     Route::get('/posts', [PostPublicController::class, 'index']);
+    Route::get('/posts/archive-months', [PostPublicController::class, 'archiveMonths']);
     Route::get('/posts/{slug}', [PostPublicController::class, 'show']);
     Route::post('/posts/{slug}/view', [PostPublicController::class, 'view']);
 

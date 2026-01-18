@@ -27,6 +27,15 @@ class PostPublicController extends Controller
             ->orderByDesc('is_important')
             ->orderByDesc('published_at');
 
+        $year = (int) $request->get('year', 0);
+        $month = (int) $request->get('month', 0);
+        if ($year >= 1970 && $year <= 2100) {
+            $q->whereYear('published_at', $year);
+            if ($month >= 1 && $month <= 12) {
+                $q->whereMonth('published_at', $month);
+            }
+        }
+
         if ($request->filled('exclude')) {
             $excludeId = (int) $request->get('exclude');
             if ($excludeId > 0) {
@@ -65,6 +74,46 @@ class PostPublicController extends Controller
 
         $per = min((int) $request->get('per_page', 12), 50);
         return PostResource::collection($q->paginate($per));
+    }
+
+    /**
+     * GET /v1/posts/archive-months?status=archived
+     * Returns month/year list for archive dropdown (WordPress-like).
+     */
+    public function archiveMonths(Request $request)
+    {
+        $status = $request->string('status')->toString();
+        if (!in_array($status, [Post::STATUS_PUBLISHED, Post::STATUS_ARCHIVED], true)) {
+            $status = Post::STATUS_ARCHIVED;
+        }
+
+        $rows = Post::query()
+            ->where('status', $status)
+            ->whereNotNull('published_at')
+            ->selectRaw('YEAR(published_at) as y, MONTH(published_at) as m, COUNT(*) as c')
+            ->groupBy('y', 'm')
+            ->orderByDesc('y')
+            ->orderByDesc('m')
+            ->limit(60)
+            ->get();
+
+        $data = $rows->map(function ($r) {
+            $y = (int) ($r->y ?? 0);
+            $m = (int) ($r->m ?? 0);
+            $c = (int) ($r->c ?? 0);
+            $label = ($m >= 1 && $m <= 12 && $y > 0)
+                ? \Carbon\Carbon::create($y, $m, 1)->locale('fr')->translatedFormat('F Y')
+                : null;
+
+            return [
+                'year' => $y,
+                'month' => $m,
+                'count' => $c,
+                'label' => $label,
+            ];
+        })->values();
+
+        return response()->json(['data' => $data]);
     }
 
     public function show(string $slug)
