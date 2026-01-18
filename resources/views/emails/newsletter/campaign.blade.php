@@ -27,7 +27,7 @@
 <body style="margin:0;padding:0;background:#f3f6fb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,Helvetica,sans-serif;color:#111827;">
   {{-- Preheader (hidden) --}}
   <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;">
-    {{ $campaign->subject }}
+    {{ !empty($postSnippet) ? $postSnippet : $campaign->subject }}
   </div>
 
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f3f6fb;">
@@ -40,7 +40,20 @@
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td style="font-size:14px;color:#0b1b3a;font-weight:800;letter-spacing:.2px;">
-                    Université de Mahajanga
+                    @if(!empty($logoUrl))
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                          <td style="padding-right:10px;">
+                            <img src="{{ $logoUrl }}" alt="Université de Mahajanga" height="32" style="display:block;height:32px;width:auto;border:0;outline:none;text-decoration:none;">
+                          </td>
+                          <td style="font-size:14px;color:#0b1b3a;font-weight:900;letter-spacing:.2px;">
+                            Université de Mahajanga
+                          </td>
+                        </tr>
+                      </table>
+                    @else
+                      Université de Mahajanga
+                    @endif
                   </td>
                   <td align="right" style="font-size:12px;color:#6b7280;">
                     @if(!empty($readMoreUrl))
@@ -72,7 +85,7 @@
                     <div class="hero-title" style="font-size:22px;line-height:1.3;font-weight:900;color:#0b1b3a;">
                       {{ $campaign->subject }}
                     </div>
-                    @if(!empty($postExcerpt))
+                    @if(empty($readMoreUrl) && !empty($postExcerpt))
                       <div style="margin-top:10px;font-size:14px;line-height:1.6;color:#374151;">
                         {{ $postExcerpt }}
                       </div>
@@ -94,7 +107,18 @@
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td class="px content" style="padding:18px 24px 10px 24px;font-size:15px;line-height:1.75;color:#111827;overflow-wrap:anywhere;word-break:break-word;">
-                    {!! $contentHtmlEmail !!}
+                    @if(!empty($readMoreUrl))
+                      @if(!empty($postSnippet))
+                        <div style="background:#f8fafc;border:1px solid #eef2f7;border-radius:14px;padding:14px 14px;margin:0 0 12px 0;">
+                          <div style="font-size:13px;color:#6b7280;font-weight:700;margin-bottom:6px;">Résumé</div>
+                          <div style="font-size:15px;line-height:1.7;color:#111827;">
+                            {{ $postSnippet }}
+                          </div>
+                        </div>
+                      @endif
+                    @else
+                      {!! $contentHtmlEmail !!}
+                    @endif
                   </td>
                 </tr>
               </table>

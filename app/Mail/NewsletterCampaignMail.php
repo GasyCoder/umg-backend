@@ -4,9 +4,12 @@ namespace App\Mail;
 
 use App\Models\NewsletterCampaign;
 use App\Models\NewsletterSubscriber;
+use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
 
 class NewsletterCampaignMail extends Mailable
 {
@@ -43,6 +46,25 @@ class NewsletterCampaignMail extends Mailable
 
         $contentHtmlEmail = $this->normalizeHtmlForEmail($this->campaign->content_html);
 
+        $postSnippet = null;
+        if ($post) {
+            $raw = $post->excerpt ?: strip_tags((string) $post->content_html);
+            $raw = preg_replace('/\s+/u', ' ', (string) $raw) ?: '';
+            $raw = trim($raw);
+            $postSnippet = $raw !== '' ? Str::limit($raw, 360) : null;
+        }
+
+        $logoUrl = Cache::remember('settings.general.logo_url', 3600, function () {
+            $general = Setting::byGroup('general');
+            $logoId = $general['logo_id'] ?? null;
+            if (!$logoId) return null;
+            $logo = \App\Models\Media::find($logoId);
+            return $logo?->url;
+        });
+        if (is_string($logoUrl) && $logoUrl !== '' && !str_starts_with($logoUrl, 'http')) {
+            $logoUrl = rtrim((string) config('app.url', ''), '/') . '/' . ltrim($logoUrl, '/');
+        }
+
         return $this->subject($this->campaign->subject)
             ->view('emails.newsletter.campaign')
             ->with([
@@ -55,6 +77,8 @@ class NewsletterCampaignMail extends Mailable
                 'postExcerpt' => $post?->excerpt,
                 'frontendBase' => $frontendBase,
                 'contentHtmlEmail' => $contentHtmlEmail,
+                'postSnippet' => $postSnippet,
+                'logoUrl' => $logoUrl,
             ]);
     }
 
