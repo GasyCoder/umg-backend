@@ -21,6 +21,8 @@
       .container { width: 100% !important; }
       .px { padding-left: 16px !important; padding-right: 16px !important; }
       .hero-title { font-size: 20px !important; line-height: 1.25 !important; }
+      .btn-td { width: 100% !important; }
+      .btn { display: block !important; width: 100% !important; text-align: center !important; }
     }
   </style>
 </head>
@@ -44,15 +46,21 @@
                       <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                         <tr>
                           <td style="padding-right:10px;">
-                            <img src="{{ $logoUrl }}" alt="Université de Mahajanga" height="32" style="display:block;height:32px;width:auto;border:0;outline:none;text-decoration:none;">
+                            <a href="{{ $frontendBase }}" style="text-decoration:none;">
+                              <img src="{{ $logoUrl }}" alt="Université de Mahajanga" height="32" style="display:block;height:32px;width:auto;border:0;outline:none;text-decoration:none;">
+                            </a>
                           </td>
                           <td style="font-size:14px;color:#0b1b3a;font-weight:900;letter-spacing:.2px;">
-                            Université de Mahajanga
+                            <a href="{{ $frontendBase }}" style="color:#0b1b3a;text-decoration:none;">
+                              Université de Mahajanga
+                            </a>
                           </td>
                         </tr>
                       </table>
                     @else
-                      Université de Mahajanga
+                      <a href="{{ $frontendBase }}" style="color:#0b1b3a;text-decoration:none;">
+                        Université de Mahajanga
+                      </a>
                     @endif
                   </td>
                   <td align="right" style="font-size:12px;color:#6b7280;">
@@ -83,7 +91,13 @@
                 <tr>
                   <td class="px" style="padding:22px 24px 8px 24px;">
                     <div class="hero-title" style="font-size:22px;line-height:1.3;font-weight:900;color:#0b1b3a;">
-                      {{ $campaign->subject }}
+                      @if(!empty($readMoreUrl))
+                        <a href="{{ $readMoreUrl }}" style="color:#0b1b3a;text-decoration:none;display:inline-block;">
+                          {{ $campaign->subject }}
+                        </a>
+                      @else
+                        {{ $campaign->subject }}
+                      @endif
                     </div>
                     @if(empty($readMoreUrl) && !empty($postExcerpt))
                       <div style="margin-top:10px;font-size:14px;line-height:1.6;color:#374151;">
@@ -127,17 +141,15 @@
               @if(!empty($readMoreUrl))
                 <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                   <tr>
-                    <td class="px" style="padding:8px 24px 22px 24px;">
-                      <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                    <td class="px" align="center" style="padding:8px 24px 22px 24px;">
+                      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="max-width:280px;">
                         <tr>
-                          <td bgcolor="#2563eb" style="border-radius:12px;">
+                          <td class="btn-td" bgcolor="#2563eb" style="border-radius:12px;">
                             <a href="{{ $readMoreUrl }}"
-                               style="display:inline-block;padding:12px 18px;font-size:14px;font-weight:800;color:#ffffff;text-decoration:none;border-radius:12px;">
+                               class="btn"
+                               style="display:inline-block;padding:12px 18px;font-size:14px;font-weight:800;color:#ffffff;text-decoration:none;border-radius:12px;mso-padding-alt:12px 18px;text-align:center;">
                               En savoir plus
                             </a>
-                          </td>
-                          <td style="padding-left:12px;font-size:12px;color:#6b7280;">
-                            <a href="{{ $frontendBase }}" style="color:#6b7280;text-decoration:none;">mahajanga-univ.mg</a>
                           </td>
                         </tr>
                       </table>
@@ -151,9 +163,8 @@
                 <tr>
                   <td class="px" style="padding:14px 24px;background:#fbfcfe;border-top:1px solid #eef2f7;font-size:12px;line-height:1.6;color:#6b7280;">
                     <div>Vous recevez cet email car vous êtes abonné(e) à la newsletter.</div>
-                    <div style="margin-top:6px;">
-                      Se désabonner :
-                      <a href="{{ $unsubscribeUrl }}" style="color:#2563eb;text-decoration:none;">{{ $unsubscribeUrl }}</a>
+                    <div style="margin-top:8px;">
+                      <a href="{{ $unsubscribeUrl }}" style="color:#2563eb;text-decoration:none;font-weight:700;">Se désabonner</a>
                     </div>
                   </td>
                 </tr>
