@@ -20,6 +20,30 @@ class NewsletterCampaignMail extends Mailable
         public NewsletterSubscriber $subscriber
     ) {}
 
+    private function absoluteUrl(?string $url): ?string
+    {
+        if (!is_string($url) || $url === '') return null;
+        if (str_starts_with($url, 'http')) return $url;
+        return rtrim((string) config('app.url', ''), '/') . '/' . ltrim($url, '/');
+    }
+
+    private function resolveLogoUrl(): ?string
+    {
+        $logoId = (int) (Setting::get('logo_id') ?? 0);
+        $faviconId = (int) (Setting::get('favicon_id') ?? 0);
+
+        $mediaId = $logoId > 0 ? $logoId : ($faviconId > 0 ? $faviconId : 0);
+        if ($mediaId <= 0) return null;
+
+        $cacheKey = 'settings.brand.media_url.' . $mediaId;
+        $url = Cache::remember($cacheKey, 3600, function () use ($mediaId) {
+            $media = \App\Models\Media::find($mediaId);
+            return $media?->url;
+        });
+
+        return $this->absoluteUrl(is_string($url) ? $url : null);
+    }
+
     public function build()
     {
         $this->campaign->loadMissing(['post.coverImage']);
@@ -39,9 +63,7 @@ class NewsletterCampaignMail extends Mailable
         if ($post && $post->coverImage) {
             $coverImageAlt = $post->coverImage->alt ?: $post->title;
             $coverImageUrl = $post->coverImage->url;
-            if (is_string($coverImageUrl) && $coverImageUrl !== '' && !str_starts_with($coverImageUrl, 'http')) {
-                $coverImageUrl = rtrim((string) config('app.url', ''), '/') . '/' . ltrim($coverImageUrl, '/');
-            }
+            $coverImageUrl = $this->absoluteUrl(is_string($coverImageUrl) ? $coverImageUrl : null);
         }
 
         $contentHtmlEmail = $this->normalizeHtmlForEmail($this->campaign->content_html);
@@ -54,16 +76,7 @@ class NewsletterCampaignMail extends Mailable
             $postSnippet = $raw !== '' ? Str::limit($raw, 360) : null;
         }
 
-        $logoUrl = Cache::remember('settings.general.logo_url', 3600, function () {
-            $general = Setting::byGroup('general');
-            $logoId = $general['logo_id'] ?? null;
-            if (!$logoId) return null;
-            $logo = \App\Models\Media::find($logoId);
-            return $logo?->url;
-        });
-        if (is_string($logoUrl) && $logoUrl !== '' && !str_starts_with($logoUrl, 'http')) {
-            $logoUrl = rtrim((string) config('app.url', ''), '/') . '/' . ltrim($logoUrl, '/');
-        }
+        $logoUrl = $this->resolveLogoUrl();
 
         return $this->subject($this->campaign->subject)
             ->view('emails.newsletter.campaign')

@@ -10,6 +10,30 @@
     {{-- Digest header --}}
     <tr>
       <td style="padding:0 0 16px 0;">
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td valign="middle" style="padding:0;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  @if(!empty($logo_url))
+                    <td style="padding-right:10px;">
+                      <a href="{{ $frontend_base ?? ($hero['url'] ?? '#') }}" style="text-decoration:none;display:inline-block;">
+                        <img src="{{ $logo_url }}" alt="{{ $site_name ?? 'Université de Mahajanga' }}" height="28" style="display:block;height:28px;width:auto;border:0;outline:none;text-decoration:none;">
+                      </a>
+                    </td>
+                  @endif
+                  <td style="font-size:14px;font-weight:800;letter-spacing:-.1px;color:#0d0d1c;">
+                    {{ $site_name ?? 'Université de Mahajanga' }}
+                  </td>
+                </tr>
+              </table>
+            </td>
+            <td align="right" valign="middle" style="padding:0;font-size:12px;color:#6b7280;font-weight:700;">
+              {{ $issue_label ?? '' }}
+            </td>
+          </tr>
+        </table>
+        <div style="height:12px;line-height:12px;font-size:12px;">&nbsp;</div>
         <div style="font-size:22px;line-height:1.2;font-weight:900;letter-spacing:-.2px;color:#0d0d1c;">
           Revue hebdomadaire
         </div>

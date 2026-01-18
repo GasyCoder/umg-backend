@@ -8,6 +8,7 @@ use App\Http\Resources\NewsletterCampaignResource;
 use App\Jobs\SendNewsletterToSubscriberJob;
 use App\Models\NewsletterCampaign;
 use App\Models\Post;
+use App\Models\Setting;
 use App\Models\NewsletterSend;
 use App\Models\NewsletterSubscriber;
 use App\Support\Audit;
@@ -93,6 +94,16 @@ class NewsletterCampaignAdminController extends Controller
 
         $frontendBase = rtrim((string) config('app.frontend_url', 'http://localhost:3000'), '/');
 
+        $siteName = (string) (Setting::get('site_name') ?? 'Université de Mahajanga');
+        $logoUrl = null;
+        $logoId = (int) (Setting::get('logo_id') ?? 0);
+        $faviconId = (int) (Setting::get('favicon_id') ?? 0);
+        $mediaId = $logoId > 0 ? $logoId : ($faviconId > 0 ? $faviconId : 0);
+        if ($mediaId > 0) {
+            $media = \App\Models\Media::find($mediaId);
+            $logoUrl = $this->absoluteMediaUrl($media?->url);
+        }
+
         $postsById = Post::query()
             ->whereIn('id', $postIds)
             ->with(['coverImage', 'categories'])
@@ -154,6 +165,9 @@ class NewsletterCampaignAdminController extends Controller
             'posts' => $cards,
             'issue_label' => 'Semaine ' . $week,
             'date_label' => $date,
+            'site_name' => $siteName,
+            'frontend_base' => $frontendBase,
+            'logo_url' => $logoUrl,
         ])->render();
 
         $campaign = NewsletterCampaign::create([
