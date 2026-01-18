@@ -15,8 +15,13 @@ class PostPublicController extends Controller
 
     public function index(Request $request)
     {
+        $status = $request->string('status')->toString();
+        if (!in_array($status, [Post::STATUS_PUBLISHED, Post::STATUS_ARCHIVED], true)) {
+            $status = Post::STATUS_PUBLISHED;
+        }
+
         $q = Post::query()
-            ->where('status', 'published')
+            ->where('status', $status)
             ->whereNotNull('published_at')
             ->with(['coverImage','categories','tags'])
             ->orderByDesc('is_important')
@@ -66,7 +71,7 @@ class PostPublicController extends Controller
     {
         $post = Post::query()
             ->where('slug', $slug)
-            ->where('status', 'published')
+            ->whereIn('status', [Post::STATUS_PUBLISHED, Post::STATUS_ARCHIVED])
             ->whereNotNull('published_at')
             ->with(['coverImage','categories','tags','gallery','author'])
             ->firstOrFail();
@@ -82,7 +87,7 @@ class PostPublicController extends Controller
     {
         $post = Post::query()
             ->where('slug', $slug)
-            ->where('status', 'published')
+            ->whereIn('status', [Post::STATUS_PUBLISHED, Post::STATUS_ARCHIVED])
             ->whereNotNull('published_at')
             ->firstOrFail();
 
