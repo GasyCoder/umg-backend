@@ -32,6 +32,9 @@ class Media extends Model
 
     public function getUrlAttribute(): string
     {
+        if (($this->type ?? null) === 'folder' || !$this->path) {
+            return '';
+        }
         return Storage::disk($this->disk)->url($this->path);
     }
 
