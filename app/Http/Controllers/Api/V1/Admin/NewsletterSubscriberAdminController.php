@@ -112,6 +112,78 @@ class NewsletterSubscriberAdminController extends Controller
         return response()->json(['data' => true]);
     }
 
+    /**
+     * Import subscribers in bulk from a list of emails
+     */
+    public function bulkStore(Request $request)
+    {
+        $this->ensureRole($request);
+
+        $data = $request->validate([
+            'emails' => ['required', 'string'],
+            'status' => ['nullable', 'in:active,pending'],
+        ]);
+
+        $status = $data['status'] ?? 'active';
+        $lines = preg_split('/\r\n|\r|\n/', $data['emails']);
+
+        $imported = 0;
+        $duplicates = 0;
+        $invalid = 0;
+        $importedEmails = [];
+
+        foreach ($lines as $line) {
+            $email = strtolower(trim($line));
+
+            // Skip empty lines
+            if (empty($email)) {
+                continue;
+            }
+
+            // Validate email format
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $invalid++;
+                continue;
+            }
+
+            // Check if already exists
+            $existing = NewsletterSubscriber::where('email', $email)->first();
+            if ($existing) {
+                $duplicates++;
+                continue;
+            }
+
+            // Create new subscriber
+            $subscriber = NewsletterSubscriber::create([
+                'email' => $email,
+                'status' => $status,
+                'token' => Str::random(64),
+                'subscribed_at' => $status === 'active' ? now() : null,
+            ]);
+
+            $importedEmails[] = $email;
+            $imported++;
+        }
+
+        // Log the bulk import
+        if ($imported > 0) {
+            Audit::log($request, 'newsletter.subscriber.bulk_import', 'NewsletterSubscriber', null, [
+                'imported_count' => $imported,
+                'status' => $status,
+            ]);
+        }
+
+        return response()->json([
+            'data' => [
+                'imported' => $imported,
+                'duplicates' => $duplicates,
+                'invalid' => $invalid,
+                'total_processed' => $imported + $duplicates + $invalid,
+            ],
+            'message' => "{$imported} email(s) importé(s) avec succès.",
+        ]);
+    }
+
     private function ensureRole(Request $request): void
     {
         abort_unless($request->user()?->hasAnyRole(['SuperAdmin','Validateur']), 403);
