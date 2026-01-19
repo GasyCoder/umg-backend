@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Etablissement extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'name',
         'slug',
@@ -26,11 +29,20 @@ class Etablissement extends Model
         'order',
         'is_active',
         'is_doctoral',
+        'uuid',
+        'type_id',
+        'sigle',
+        'director',
+        'slogan',
+        'about',
+        'image_path',
+        'status',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'is_doctoral' => 'boolean',
+        'status' => 'boolean',
         'order' => 'integer',
     ];
 

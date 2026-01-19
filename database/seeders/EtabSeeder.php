@@ -29,8 +29,16 @@ class EtabSeeder extends Seeder
                 ? $existing->about
                 : ($entry['about'] ?? $this->defaultAbout($entry['name']));
 
+            $slug = $existing->slug ?? Str::slug($entry['sigle'] ?? $entry['name']);
+            $description = $existing && !empty($existing->description)
+                ? $existing->description
+                : $about;
+
             $data = [
                 'name' => $entry['name'],
+                'slug' => $slug,
+                'acronym' => $entry['sigle'],
+                'description' => $description,
                 'type_id' => $entry['type_id'],
                 'sigle' => $entry['sigle'],
                 'director' => $entry['director'] ?? null,
@@ -38,6 +46,7 @@ class EtabSeeder extends Seeder
                 'about' => $about,
                 'image_path' => $logoPath ?? ($existing->image_path ?? null),
                 'status' => 1,
+                'is_active' => 1,
                 'is_doctoral' => $entry['is_doctoral'] ? 1 : 0,
                 'uuid' => $existing->uuid ?? (string) Str::uuid(),
                 'updated_at' => now(),
