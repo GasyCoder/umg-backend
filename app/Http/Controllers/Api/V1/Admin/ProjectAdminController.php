@@ -152,6 +152,8 @@ class ProjectAdminController extends Controller
         return Media::create([
             'disk' => $disk,
             'path' => $path,
+            'name' => $file->getClientOriginalName(),
+            'type' => 'file',
             'mime' => $file->getMimeType(),
             'size' => $file->getSize(),
             'alt' => 'Project hero image',
@@ -159,4 +161,3 @@ class ProjectAdminController extends Controller
         ]);
     }
 }
-

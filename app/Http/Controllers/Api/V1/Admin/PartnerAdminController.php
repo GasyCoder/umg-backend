@@ -85,6 +85,8 @@ class PartnerAdminController extends Controller
         return Media::create([
             'disk' => $disk,
             'path' => $path,
+            'name' => $file->getClientOriginalName(),
+            'type' => 'file',
             'mime' => $file->getMimeType(),
             'size' => $file->getSize(),
             'alt' => 'Partner logo',

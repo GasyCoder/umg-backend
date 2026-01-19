@@ -42,6 +42,8 @@ class DocumentAdminController extends Controller
             $media = \App\Models\Media::create([
                 'disk' => 'public',
                 'path' => $path,
+                'name' => $file->getClientOriginalName(),
+                'type' => 'file',
                 'mime' => $file->getMimeType(),
                 'size' => $file->getSize(),
                 'alt' => $data['title'],
@@ -94,6 +96,8 @@ class DocumentAdminController extends Controller
             $media = \App\Models\Media::create([
                 'disk' => 'public',
                 'path' => $path,
+                'name' => $file->getClientOriginalName(),
+                'type' => 'file',
                 'mime' => $file->getMimeType(),
                 'size' => $file->getSize(),
                 'alt' => $data['title'] ?? $doc->title,
