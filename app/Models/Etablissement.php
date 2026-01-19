@@ -25,10 +25,12 @@ class Etablissement extends Model
         'cover_image_id',
         'order',
         'is_active',
+        'is_doctoral',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'is_doctoral' => 'boolean',
         'order' => 'integer',
     ];
 

@@ -13,8 +13,8 @@ class EtabSeeder extends Seeder
 {
     public function run(): void
     {
-        if (!Schema::hasTable('etabs')) {
-            $this->command->warn('La table `etabs` est absente, le seeding des établissements est ignoré.');
+        if (!Schema::hasTable('etablissements')) {
+            $this->command->warn('La table `etablissements` est absente, le seeding des établissements est ignoré.');
             return;
         }
 
@@ -22,7 +22,7 @@ class EtabSeeder extends Seeder
         $entries = $this->etablissementData();
 
         foreach ($entries as $entry) {
-            $existing = DB::table('etabs')->where('sigle', $entry['sigle'])->first();
+            $existing = DB::table('etablissements')->where('sigle', $entry['sigle'])->first();
             $logoPath = $this->findLogoPath($disk, $entry['sigle']);
 
             $about = $existing && !empty($existing->about)
@@ -47,7 +47,7 @@ class EtabSeeder extends Seeder
                 $data['created_at'] = now();
             }
 
-            DB::table('etabs')->updateOrInsert(
+            DB::table('etablissements')->updateOrInsert(
                 ['sigle' => $entry['sigle']],
                 $data
             );
