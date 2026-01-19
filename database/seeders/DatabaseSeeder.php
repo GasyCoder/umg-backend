@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             OrganizationContentSeeder::class,
             HistoriqueContentSeeder::class,
             ProjectsSeeder::class,
+            EtabSeeder::class,
         ]);
     }
 }
