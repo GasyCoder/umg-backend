@@ -113,7 +113,7 @@
 
                     <div style="margin:0 0 12px 0;">
                       <span style="display:inline-block;padding:3px 10px;border-radius:999px;background:#e8e8ff;color:#0606e0;font-size:12px;font-weight:700;border:1px solid rgba(6,6,224,.18);">
-                        {{ !empty($readMoreUrl) ? 'À la une' : (!empty($campaign->post_id) ? 'Newsletter' : 'Revue hebdomadaire') }}
+                        {{ !empty($readMoreUrl) ? 'À la une' : (!empty($campaign->post_id) ? 'Newsletter' : 'Annonce institutionnelle') }}
                       </span>
                     </div>
 
@@ -176,7 +176,7 @@
               {{-- Footer --}}
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
-                  <td class="px" style="padding:26px 24px;background:#0f0f23;color:#e2e8f0;">
+                  <td class="px" style="padding:26px 24px;background:#03216d;color:#e2e8f0;">
                     <div style="font-size:12px;line-height:1.6;color:#94a3b8;">
                       Vous recevez cet email car vous êtes abonné(e) à la newsletter.
                     </div>
