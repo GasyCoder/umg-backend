@@ -7,6 +7,7 @@ use App\Http\Resources\EtablissementResource;
 use App\Models\Etablissement;
 use App\Support\Audit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 
 class EtablissementAdminController extends Controller
@@ -16,7 +17,7 @@ class EtablissementAdminController extends Controller
         $this->ensureRole($request);
 
         $q = Etablissement::query()
-            ->with(['logo', 'coverImage'])
+            ->with(['logo', 'coverImage', 'formations', 'parcours', 'doctoralTeams'])
             ->orderBy('order')
             ->orderBy('name');
 
@@ -41,7 +42,7 @@ class EtablissementAdminController extends Controller
     {
         $this->ensureRole($request);
 
-        $etablissement = Etablissement::with(['logo', 'coverImage'])->findOrFail($id);
+        $etablissement = Etablissement::with(['logo', 'coverImage', 'formations', 'parcours', 'doctoralTeams'])->findOrFail($id);
 
         return new EtablissementResource($etablissement);
     }
@@ -67,7 +68,25 @@ class EtablissementAdminController extends Controller
             'cover_image_id' => 'nullable|exists:media,id',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
+            'formations' => 'array',
+            'formations.*.title' => 'required_with:formations|string|max:255',
+            'formations.*.level' => 'nullable|string|max:100',
+            'formations.*.description' => 'nullable|string',
+            'parcours' => 'array',
+            'parcours.*.title' => 'required_with:parcours|string|max:255',
+            'parcours.*.mode' => 'nullable|string|max:100',
+            'parcours.*.description' => 'nullable|string',
+            'doctoral_teams' => 'array',
+            'doctoral_teams.*.name' => 'required_with:doctoral_teams|string|max:255',
+            'doctoral_teams.*.discipline' => 'nullable|string|max:255',
+            'doctoral_teams.*.contact' => 'nullable|string|max:255',
+            'doctoral_teams.*.email' => 'nullable|email|max:255',
+            'doctoral_teams.*.focus' => 'nullable|string',
         ]);
+
+        $formations = Arr::pull($data, 'formations', []);
+        $parcours = Arr::pull($data, 'parcours', []);
+        $doctoralTeams = Arr::pull($data, 'doctoral_teams', []);
 
         $data['slug'] = Str::slug($data['name']);
         
@@ -79,6 +98,10 @@ class EtablissementAdminController extends Controller
         }
 
         $etablissement = Etablissement::create($data);
+
+        $this->syncFormations($etablissement, $formations);
+        $this->syncParcours($etablissement, $parcours);
+        $this->syncDoctoralTeams($etablissement, $doctoralTeams);
 
         Audit::log($request, 'etablissement.create', 'Etablissement', $etablissement->id, [
             'name' => $etablissement->name,
@@ -110,7 +133,25 @@ class EtablissementAdminController extends Controller
             'cover_image_id' => 'nullable|exists:media,id',
             'order' => 'nullable|integer|min:0',
             'is_active' => 'boolean',
+            'formations' => 'array',
+            'formations.*.title' => 'required_with:formations|string|max:255',
+            'formations.*.level' => 'nullable|string|max:100',
+            'formations.*.description' => 'nullable|string',
+            'parcours' => 'array',
+            'parcours.*.title' => 'required_with:parcours|string|max:255',
+            'parcours.*.mode' => 'nullable|string|max:100',
+            'parcours.*.description' => 'nullable|string',
+            'doctoral_teams' => 'array',
+            'doctoral_teams.*.name' => 'required_with:doctoral_teams|string|max:255',
+            'doctoral_teams.*.discipline' => 'nullable|string|max:255',
+            'doctoral_teams.*.contact' => 'nullable|string|max:255',
+            'doctoral_teams.*.email' => 'nullable|email|max:255',
+            'doctoral_teams.*.focus' => 'nullable|string',
         ]);
+
+        $formations = Arr::pull($data, 'formations', []);
+        $parcours = Arr::pull($data, 'parcours', []);
+        $doctoralTeams = Arr::pull($data, 'doctoral_teams', []);
 
         // Update slug if name changed
         if (isset($data['name']) && $data['name'] !== $etablissement->name) {
@@ -123,6 +164,10 @@ class EtablissementAdminController extends Controller
         }
 
         $etablissement->update($data);
+
+        $this->syncFormations($etablissement, $formations);
+        $this->syncParcours($etablissement, $parcours);
+        $this->syncDoctoralTeams($etablissement, $doctoralTeams);
 
         Audit::log($request, 'etablissement.update', 'Etablissement', $etablissement->id, [
             'name' => $etablissement->name,
@@ -149,5 +194,55 @@ class EtablissementAdminController extends Controller
     private function ensureRole(Request $request): void
     {
         abort_unless($request->user()?->hasAnyRole(['SuperAdmin', 'Validateur']), 403);
+    }
+
+    private function syncFormations(Etablissement $etablissement, array $formations): void
+    {
+        $etablissement->formations()->delete();
+        foreach ($formations as $index => $formation) {
+            if (empty($formation['title'])) {
+                continue;
+            }
+            $etablissement->formations()->create([
+                'title' => $formation['title'],
+                'level' => $formation['level'] ?? null,
+                'description' => $formation['description'] ?? null,
+                'order' => $formation['order'] ?? $index,
+            ]);
+        }
+    }
+
+    private function syncParcours(Etablissement $etablissement, array $parcours): void
+    {
+        $etablissement->parcours()->delete();
+        foreach ($parcours as $index => $entry) {
+            if (empty($entry['title'])) {
+                continue;
+            }
+            $etablissement->parcours()->create([
+                'title' => $entry['title'],
+                'mode' => $entry['mode'] ?? null,
+                'description' => $entry['description'] ?? null,
+                'order' => $entry['order'] ?? $index,
+            ]);
+        }
+    }
+
+    private function syncDoctoralTeams(Etablissement $etablissement, array $teams): void
+    {
+        $etablissement->doctoralTeams()->delete();
+        foreach ($teams as $index => $team) {
+            if (empty($team['name'])) {
+                continue;
+            }
+            $etablissement->doctoralTeams()->create([
+                'name' => $team['name'],
+                'discipline' => $team['discipline'] ?? null,
+                'contact' => $team['contact'] ?? null,
+                'email' => $team['email'] ?? null,
+                'focus' => $team['focus'] ?? null,
+                'order' => $team['order'] ?? $index,
+            ]);
+        }
     }
 }

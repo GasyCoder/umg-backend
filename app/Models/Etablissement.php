@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Etablissement extends Model
@@ -54,5 +55,20 @@ class Etablissement extends Model
     public function coverImage(): BelongsTo
     {
         return $this->belongsTo(Media::class, 'cover_image_id');
+    }
+
+    public function formations(): HasMany
+    {
+        return $this->hasMany(EtablissementFormation::class);
+    }
+
+    public function parcours(): HasMany
+    {
+        return $this->hasMany(EtablissementParcours::class);
+    }
+
+    public function doctoralTeams(): HasMany
+    {
+        return $this->hasMany(DoctoralTeam::class);
     }
 }
