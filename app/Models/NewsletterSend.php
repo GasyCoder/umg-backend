@@ -18,6 +18,8 @@ class NewsletterSend extends Model
         'newsletter_subscriber_id',
         'status',
         'sent_at',
+        'opened_at',
+        'open_count',
         'error',
     ];
 
@@ -25,6 +27,8 @@ class NewsletterSend extends Model
         'newsletter_campaign_id' => 'integer',
         'newsletter_subscriber_id' => 'integer',
         'sent_at' => 'datetime',
+        'opened_at' => 'datetime',
+        'open_count' => 'integer',
     ];
 
     public function campaign()

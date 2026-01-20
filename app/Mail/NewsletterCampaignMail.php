@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Http\Controllers\Api\V1\Public\NewsletterTrackingController;
 use App\Models\NewsletterCampaign;
 use App\Models\NewsletterSubscriber;
 use App\Models\Setting;
@@ -17,7 +18,8 @@ class NewsletterCampaignMail extends Mailable
 
     public function __construct(
         public NewsletterCampaign $campaign,
-        public NewsletterSubscriber $subscriber
+        public NewsletterSubscriber $subscriber,
+        public ?int $sendId = null
     ) {}
 
     private function absoluteUrl(?string $url): ?string
@@ -78,6 +80,14 @@ class NewsletterCampaignMail extends Mailable
 
         $logoUrl = $this->resolveLogoUrl();
 
+        // Générer l'URL de tracking si on a un sendId
+        $trackingPixelUrl = null;
+        if ($this->sendId) {
+            $apiBase = rtrim((string) config('app.url', ''), '/');
+            $token = NewsletterTrackingController::encodeToken($this->sendId);
+            $trackingPixelUrl = $apiBase . '/api/v1/newsletter/track/' . $token . '/open.gif';
+        }
+
         return $this->subject($this->campaign->subject)
             ->view('emails.newsletter.campaign')
             ->with([
@@ -92,6 +102,7 @@ class NewsletterCampaignMail extends Mailable
                 'contentHtmlEmail' => $contentHtmlEmail,
                 'postSnippet' => $postSnippet,
                 'logoUrl' => $logoUrl,
+                'trackingPixelUrl' => $trackingPixelUrl,
             ]);
     }
 

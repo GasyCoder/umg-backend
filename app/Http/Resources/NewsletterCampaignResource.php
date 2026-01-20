@@ -21,8 +21,8 @@ class NewsletterCampaignResource extends JsonResource
 
             // Counts from withCount
             'recipients_count' => (int) ($this->sends_count ?? 0),
-            'opens_count' => 0, // TODO: Add opened_at column to newsletter_sends
-            'clicks_count' => 0, // TODO: Add clicked_at column to newsletter_sends
+            'opens_count' => (int) ($this->opens_count ?? 0),
+            'clicks_count' => 0, // TODO: Implement click tracking
 
             // Optional content (for preview/edit)
             'content_html' => $this->when($request->boolean('include_content'), $this->content_html),

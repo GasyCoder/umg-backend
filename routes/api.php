@@ -28,6 +28,7 @@ use App\Http\Controllers\Api\V1\Public\DocumentDownloadPublicController;
 use App\Http\Controllers\Api\V1\Public\DocumentPublicController;
 use App\Http\Controllers\Api\V1\Public\HealthPublicController;
 use App\Http\Controllers\Api\V1\Public\NewsletterPublicController;
+use App\Http\Controllers\Api\V1\Public\NewsletterTrackingController;
 use App\Http\Controllers\Api\V1\Public\ContactPublicController;
 use App\Http\Controllers\Api\V1\Public\PartnerPublicController;
 use App\Http\Controllers\Api\V1\Public\PostPublicController;
@@ -110,6 +111,9 @@ Route::prefix('v1')->group(function () {
         ->middleware('throttle:newsletter');
     Route::post('/newsletter/unsubscribe', [NewsletterPublicController::class, 'unsubscribe'])
         ->middleware('throttle:newsletter');
+
+    // Newsletter tracking (pixel ouverture) - pas de throttle pour ne pas bloquer l'affichage
+    Route::get('/newsletter/track/{token}/open.gif', [NewsletterTrackingController::class, 'trackOpen']);
 
     Route::options('/contact', function () {
         return response()->json();
@@ -241,6 +245,7 @@ Route::prefix('v1')->group(function () {
         */
 
         Route::get('/admin/newsletter/subscribers', [NewsletterSubscriberAdminController::class, 'index']);
+        Route::get('/admin/newsletter/subscribers/counts', [NewsletterSubscriberAdminController::class, 'counts']);
         Route::post('/admin/newsletter/subscribers', [NewsletterSubscriberAdminController::class, 'store']);
         Route::post('/admin/newsletter/subscribers/bulk', [NewsletterSubscriberAdminController::class, 'bulkStore']);
         Route::put('/admin/newsletter/subscribers/{id}', [NewsletterSubscriberAdminController::class, 'update']);

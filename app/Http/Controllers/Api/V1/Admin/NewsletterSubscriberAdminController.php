@@ -35,6 +35,32 @@ class NewsletterSubscriberAdminController extends Controller
         return NewsletterSubscriberResource::collection($q->paginate($per));
     }
 
+    /**
+     * GET /v1/admin/newsletter/subscribers/counts
+     * Retourne le nombre d'abonnés par status
+     */
+    public function counts(Request $request)
+    {
+        $this->ensureRole($request);
+
+        $counts = NewsletterSubscriber::query()
+            ->selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        $total = array_sum($counts);
+
+        return response()->json([
+            'data' => [
+                'total' => $total,
+                'active' => (int) ($counts['active'] ?? 0),
+                'pending' => (int) ($counts['pending'] ?? 0),
+                'unsubscribed' => (int) ($counts['unsubscribed'] ?? 0),
+            ],
+        ]);
+    }
+
     public function store(StoreNewsletterSubscriberRequest $request)
     {
         $data = $request->validated();

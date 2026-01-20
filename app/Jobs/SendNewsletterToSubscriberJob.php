@@ -59,7 +59,7 @@ class SendNewsletterToSubscriberJob implements ShouldQueue
         }
 
         try {
-            Mail::to($subscriber->email)->send(new NewsletterCampaignMail($campaign, $subscriber));
+            Mail::to($subscriber->email)->send(new NewsletterCampaignMail($campaign, $subscriber, $send->id));
 
             $send->update([
                 'status' => NewsletterSend::STATUS_SENT,

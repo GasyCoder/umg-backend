@@ -31,6 +31,9 @@ class NewsletterCampaignAdminController extends Controller
 
         $q = NewsletterCampaign::query()
             ->withCount('sends')
+            ->withCount(['sends as opens_count' => function ($query) {
+                $query->whereNotNull('opened_at');
+            }])
             ->orderByDesc('id');
 
         if ($request->filled('status')) {
@@ -75,6 +78,10 @@ class NewsletterCampaignAdminController extends Controller
      * POST /v1/admin/newsletter/campaigns/from-posts
      * - crée une campagne à partir de plusieurs articles (cards)
      * - optionnellement envoie immédiatement (send_now=true par défaut)
+     *
+     * Modes d'envoi:
+     * - mode=subscribers (défaut): envoie à tous les abonnés avec le status donné
+     * - mode=custom: envoie uniquement aux subscriber_ids et/ou extra_emails fournis
      */
     public function fromPosts(Request $request)
     {
@@ -85,6 +92,13 @@ class NewsletterCampaignAdminController extends Controller
             'post_ids.*' => ['integer', 'distinct', 'min:1'],
             'subject' => ['sometimes', 'string', 'max:255'],
             'send_now' => ['sometimes', 'boolean'],
+            // Nouveaux champs pour le ciblage des destinataires
+            'mode' => ['sometimes', 'string', 'in:subscribers,custom'],
+            'status' => ['sometimes', 'string', 'in:active,pending,unsubscribed'],
+            'subscriber_ids' => ['sometimes', 'array'],
+            'subscriber_ids.*' => ['integer', 'distinct', 'min:1'],
+            'extra_emails' => ['sometimes', 'array'],
+            'extra_emails.*' => ['email', 'max:255'],
         ]);
 
         $postIds = array_values(array_unique(array_map('intval', $data['post_ids'] ?? [])));
@@ -198,25 +212,90 @@ class NewsletterCampaignAdminController extends Controller
 
         $queuedCount = 0;
 
-        DB::transaction(function () use ($campaign, &$queuedCount) {
-            NewsletterSubscriber::query()
-                ->where('status', 'active')
-                ->select(['id'])
-                ->orderBy('id')
-                ->chunkById(500, function ($subs) use ($campaign, &$queuedCount) {
+        // Déterminer le mode d'envoi
+        $mode = $data['mode'] ?? 'subscribers';
+        $targetStatus = $data['status'] ?? 'active';
+        $subscriberIds = array_values(array_unique(array_map('intval', $data['subscriber_ids'] ?? [])));
+        $extraEmails = array_values(array_unique(array_map('strtolower', array_map('trim', $data['extra_emails'] ?? []))));
+
+        DB::transaction(function () use ($campaign, &$queuedCount, $mode, $targetStatus, $subscriberIds, $extraEmails) {
+            if ($mode === 'custom') {
+                // Mode personnalisé: utiliser subscriber_ids + extra_emails
+                $targetSubscriberIds = [];
+
+                // Ajouter les IDs fournis (vérifier qu'ils existent)
+                if (count($subscriberIds) > 0) {
+                    $existingIds = NewsletterSubscriber::query()
+                        ->whereIn('id', $subscriberIds)
+                        ->pluck('id')
+                        ->toArray();
+                    $targetSubscriberIds = array_merge($targetSubscriberIds, $existingIds);
+                }
+
+                // Traiter les extra_emails: créer ou récupérer les subscribers
+                if (count($extraEmails) > 0) {
+                    // Récupérer les emails déjà existants
+                    $existingByEmail = NewsletterSubscriber::query()
+                        ->whereIn('email', $extraEmails)
+                        ->pluck('id', 'email')
+                        ->toArray();
+
+                    foreach ($extraEmails as $email) {
+                        $emailLower = strtolower($email);
+                        if (isset($existingByEmail[$emailLower])) {
+                            $targetSubscriberIds[] = $existingByEmail[$emailLower];
+                        } else {
+                            // Créer un nouvel abonné avec status=active
+                            $newSub = NewsletterSubscriber::create([
+                                'email' => $emailLower,
+                                'name' => null,
+                                'status' => 'active',
+                                'token' => bin2hex(random_bytes(32)),
+                                'subscribed_at' => now(),
+                            ]);
+                            $targetSubscriberIds[] = $newSub->id;
+                        }
+                    }
+                }
+
+                // Dédupliquer
+                $targetSubscriberIds = array_values(array_unique($targetSubscriberIds));
+
+                if (count($targetSubscriberIds) > 0) {
                     $rows = [];
-                    foreach ($subs as $s) {
+                    foreach ($targetSubscriberIds as $subId) {
                         $rows[] = [
                             'newsletter_campaign_id' => $campaign->id,
-                            'newsletter_subscriber_id' => $s->id,
+                            'newsletter_subscriber_id' => $subId,
                             'status' => 'queued',
                             'created_at' => now(),
                             'updated_at' => now(),
                         ];
                     }
-                    $queuedCount += count($rows);
+                    $queuedCount = count($rows);
                     NewsletterSend::query()->insertOrIgnore($rows);
-                });
+                }
+            } else {
+                // Mode subscribers: envoyer à tous les abonnés avec le status ciblé
+                NewsletterSubscriber::query()
+                    ->where('status', $targetStatus)
+                    ->select(['id'])
+                    ->orderBy('id')
+                    ->chunkById(500, function ($subs) use ($campaign, &$queuedCount) {
+                        $rows = [];
+                        foreach ($subs as $s) {
+                            $rows[] = [
+                                'newsletter_campaign_id' => $campaign->id,
+                                'newsletter_subscriber_id' => $s->id,
+                                'status' => 'queued',
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
+                        }
+                        $queuedCount += count($rows);
+                        NewsletterSend::query()->insertOrIgnore($rows);
+                    });
+            }
         });
 
         // Dispatch jobs
@@ -253,10 +332,23 @@ class NewsletterCampaignAdminController extends Controller
      * - verrouille le statut (draft -> sending)
      * - crée newsletter_sends (queued)
      * - dispatch les jobs
+     *
+     * Modes d'envoi (identique à fromPosts):
+     * - mode=subscribers (défaut): envoie à tous les abonnés avec le status donné
+     * - mode=custom: envoie uniquement aux subscriber_ids et/ou extra_emails fournis
      */
     public function send(Request $request, int $id)
     {
         $this->ensureRoleSend($request);
+
+        $data = $request->validate([
+            'mode' => ['sometimes', 'string', 'in:subscribers,custom'],
+            'status' => ['sometimes', 'string', 'in:active,pending,unsubscribed'],
+            'subscriber_ids' => ['sometimes', 'array'],
+            'subscriber_ids.*' => ['integer', 'distinct', 'min:1'],
+            'extra_emails' => ['sometimes', 'array'],
+            'extra_emails.*' => ['email', 'max:255'],
+        ]);
 
         $campaign = NewsletterCampaign::findOrFail($id);
 
@@ -273,25 +365,90 @@ class NewsletterCampaignAdminController extends Controller
             ], 409);
         }
 
-        DB::transaction(function () use ($campaign) {
+        $queuedCount = 0;
 
-            NewsletterSubscriber::query()
-                ->where('status', 'active')
-                ->select(['id'])
-                ->orderBy('id')
-                ->chunkById(500, function ($subs) use ($campaign) {
+        // Déterminer le mode d'envoi
+        $mode = $data['mode'] ?? 'subscribers';
+        $targetStatus = $data['status'] ?? 'active';
+        $subscriberIds = array_values(array_unique(array_map('intval', $data['subscriber_ids'] ?? [])));
+        $extraEmails = array_values(array_unique(array_map('strtolower', array_map('trim', $data['extra_emails'] ?? []))));
+
+        DB::transaction(function () use ($campaign, &$queuedCount, $mode, $targetStatus, $subscriberIds, $extraEmails) {
+            if ($mode === 'custom') {
+                // Mode personnalisé: utiliser subscriber_ids + extra_emails
+                $targetSubscriberIds = [];
+
+                // Ajouter les IDs fournis (vérifier qu'ils existent)
+                if (count($subscriberIds) > 0) {
+                    $existingIds = NewsletterSubscriber::query()
+                        ->whereIn('id', $subscriberIds)
+                        ->pluck('id')
+                        ->toArray();
+                    $targetSubscriberIds = array_merge($targetSubscriberIds, $existingIds);
+                }
+
+                // Traiter les extra_emails: créer ou récupérer les subscribers
+                if (count($extraEmails) > 0) {
+                    $existingByEmail = NewsletterSubscriber::query()
+                        ->whereIn('email', $extraEmails)
+                        ->pluck('id', 'email')
+                        ->toArray();
+
+                    foreach ($extraEmails as $email) {
+                        $emailLower = strtolower($email);
+                        if (isset($existingByEmail[$emailLower])) {
+                            $targetSubscriberIds[] = $existingByEmail[$emailLower];
+                        } else {
+                            $newSub = NewsletterSubscriber::create([
+                                'email' => $emailLower,
+                                'name' => null,
+                                'status' => 'active',
+                                'token' => bin2hex(random_bytes(32)),
+                                'subscribed_at' => now(),
+                            ]);
+                            $targetSubscriberIds[] = $newSub->id;
+                        }
+                    }
+                }
+
+                // Dédupliquer
+                $targetSubscriberIds = array_values(array_unique($targetSubscriberIds));
+
+                if (count($targetSubscriberIds) > 0) {
                     $rows = [];
-                    foreach ($subs as $s) {
+                    foreach ($targetSubscriberIds as $subId) {
                         $rows[] = [
                             'newsletter_campaign_id' => $campaign->id,
-                            'newsletter_subscriber_id' => $s->id,
+                            'newsletter_subscriber_id' => $subId,
                             'status' => 'queued',
                             'created_at' => now(),
                             'updated_at' => now(),
                         ];
                     }
+                    $queuedCount = count($rows);
                     NewsletterSend::query()->insertOrIgnore($rows);
-                });
+                }
+            } else {
+                // Mode subscribers: envoyer à tous les abonnés avec le status ciblé
+                NewsletterSubscriber::query()
+                    ->where('status', $targetStatus)
+                    ->select(['id'])
+                    ->orderBy('id')
+                    ->chunkById(500, function ($subs) use ($campaign, &$queuedCount) {
+                        $rows = [];
+                        foreach ($subs as $s) {
+                            $rows[] = [
+                                'newsletter_campaign_id' => $campaign->id,
+                                'newsletter_subscriber_id' => $s->id,
+                                'status' => 'queued',
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ];
+                        }
+                        $queuedCount += count($rows);
+                        NewsletterSend::query()->insertOrIgnore($rows);
+                    });
+            }
         });
 
         // Dispatch jobs
@@ -308,9 +465,16 @@ class NewsletterCampaignAdminController extends Controller
 
         Audit::log($request, 'newsletter.campaign.send', 'NewsletterCampaign', $campaign->id, [
             'campaign_id' => $campaign->id,
+            'mode' => $mode,
+            'queued_count' => $queuedCount,
         ]);
 
-        return response()->json(['data' => true]);
+        return response()->json([
+            'data' => true,
+            'meta' => [
+                'queued' => $queuedCount,
+            ],
+        ]);
     }
 
     /**
