@@ -24,13 +24,19 @@ class EtablissementResource extends JsonResource
             'email' => $this->email,
             'website' => $this->website,
             
-            'facebook' => $this->facebook,
-            'twitter' => $this->twitter,
-            'linkedin' => $this->linkedin,
-            
-            'logo' => $this->whenLoaded('logo', fn() => [
-                'id' => $this->logo->id,
-                'url' => $this->logo->url,
+        'facebook' => $this->facebook,
+        'twitter' => $this->twitter,
+        'linkedin' => $this->linkedin,
+
+        'sigle' => $this->sigle,
+        'type_id' => $this->type_id,
+        'is_doctoral' => (bool) $this->is_doctoral,
+        'uuid' => $this->uuid,
+        'status' => $this->status,
+
+        'logo' => $this->whenLoaded('logo', fn() => [
+            'id' => $this->logo->id,
+            'url' => $this->logo->url,
             ]),
             'cover_image' => $this->whenLoaded('coverImage', fn() => [
                 'id' => $this->coverImage->id,
