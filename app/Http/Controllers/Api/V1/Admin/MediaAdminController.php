@@ -102,6 +102,8 @@ class MediaAdminController extends Controller
         $path = null;
         $size = $file->getSize();
         $mime = $file->getMimeType();
+        $width = null;
+        $height = null;
 
         if ($file instanceof UploadedFile && str_starts_with((string) $mime, 'image/')) {
             $optimized = $this->optimizeImage($file, $folder, $filename, $disk);
@@ -109,6 +111,8 @@ class MediaAdminController extends Controller
                 $path = $optimized['path'];
                 $size = $optimized['size'];
                 $mime = $optimized['mime'];
+                $width = $optimized['width'] ?? null;
+                $height = $optimized['height'] ?? null;
             }
         }
 
@@ -123,6 +127,8 @@ class MediaAdminController extends Controller
             'type' => 'file',
             'mime' => $mime,
             'size' => $size,
+            'width' => $width,
+            'height' => $height,
             'alt' => $validated['alt'] ?? null,
             'created_by' => $request->user()->id,
             'parent_id' => $validated['parent_id'] ?? null,
@@ -295,6 +301,9 @@ class MediaAdminController extends Controller
 
     private function optimizeImage(UploadedFile $file, string $folder, string $filename, string $disk): ?array
     {
+        // Prefer WebP conversion for better compression
+        $supportsWebp = function_exists('imagewebp');
+        
         if (!extension_loaded('gd')) {
             return null;
         }
@@ -314,6 +323,7 @@ class MediaAdminController extends Controller
             'image/jpeg' => 'imagecreatefromjpeg',
             'image/png' => 'imagecreatefrompng',
             'image/webp' => 'imagecreatefromwebp',
+            'image/gif' => 'imagecreatefromgif',
             default => null,
         };
 
@@ -328,13 +338,17 @@ class MediaAdminController extends Controller
 
         $width = imagesx($src);
         $height = imagesy($src);
-        $maxDim = 2000;
+        
+        // Limit max dimension to 1920px (Full HD) - more than enough for web
+        $maxDim = 1920;
         $scale = min(1, $maxDim / max($width, $height));
         $targetW = (int) max(1, round($width * $scale));
         $targetH = (int) max(1, round($height * $scale));
 
         $dst = imagecreatetruecolor($targetW, $targetH);
-        if ($mime === 'image/png' || $mime === 'image/webp') {
+        
+        // Handle transparency for PNG, WebP, GIF
+        if ($mime === 'image/png' || $mime === 'image/webp' || $mime === 'image/gif') {
             imagealphablending($dst, false);
             imagesavealpha($dst, true);
             $transparent = imagecolorallocatealpha($dst, 0, 0, 0, 127);
@@ -350,10 +364,23 @@ class MediaAdminController extends Controller
             return null;
         }
 
-        $saved = match ($mime) {
-            'image/jpeg' => imagejpeg($dst, $tmp, 82),
-            'image/png' => imagepng($dst, $tmp, 7),
-            'image/webp' => function_exists('imagewebp') ? imagewebp($dst, $tmp, 80) : false,
+        // Determine output format - prefer WebP for best compression
+        $outputMime = $mime;
+        $outputFilename = $filename;
+        
+        // Convert JPEG/PNG to WebP if supported (saves 30-50% file size)
+        if ($supportsWebp && in_array($mime, ['image/jpeg', 'image/png'], true)) {
+            $outputMime = 'image/webp';
+            // Change extension to .webp
+            $outputFilename = preg_replace('/\.[^.]+$/', '.webp', $filename);
+        }
+
+        // Save with appropriate format and quality
+        $saved = match ($outputMime) {
+            'image/webp' => imagewebp($dst, $tmp, 75), // WebP at 75% quality
+            'image/jpeg' => imagejpeg($dst, $tmp, 75), // JPEG at 75% quality
+            'image/png' => imagepng($dst, $tmp, 8),    // PNG compression level 8 (0-9)
+            'image/gif' => imagegif($dst, $tmp),
             default => false,
         };
 
@@ -365,14 +392,16 @@ class MediaAdminController extends Controller
             return null;
         }
 
-        $storedPath = Storage::disk($disk)->putFileAs($folder, new HttpFile($tmp), $filename);
+        $storedPath = Storage::disk($disk)->putFileAs($folder, new HttpFile($tmp), $outputFilename);
         $size = filesize($tmp) ?: $file->getSize();
         @unlink($tmp);
 
         return [
             'path' => $storedPath,
             'size' => $size,
-            'mime' => $mime,
+            'mime' => $outputMime,
+            'width' => $targetW,
+            'height' => $targetH,
         ];
     }
 }
