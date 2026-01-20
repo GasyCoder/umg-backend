@@ -9,9 +9,6 @@ class DoctoralTeam extends Model
     protected $fillable = [
         'etablissement_id',
         'name',
-        'discipline',
-        'contact',
-        'email',
         'focus',
         'order',
     ];

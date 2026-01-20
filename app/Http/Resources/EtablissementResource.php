@@ -57,9 +57,6 @@ class EtablissementResource extends JsonResource
             'doctoral_teams' => $this->whenLoaded('doctoralTeams', fn() => $this->doctoralTeams->map(fn ($team) => [
                 'id' => $team->id,
                 'name' => $team->name,
-                'discipline' => $team->discipline,
-                'contact' => $team->contact,
-                'email' => $team->email,
                 'focus' => $team->focus,
             ])),
             'order' => $this->order,

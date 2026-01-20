@@ -11,9 +11,6 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('etablissement_id')->constrained('etablissements')->cascadeOnDelete();
             $table->string('name');
-            $table->string('discipline')->nullable();
-            $table->string('contact')->nullable();
-            $table->string('email')->nullable();
             $table->text('focus')->nullable();
             $table->integer('order')->default(0);
             $table->timestamps();

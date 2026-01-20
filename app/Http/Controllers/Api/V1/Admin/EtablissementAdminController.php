@@ -78,9 +78,6 @@ class EtablissementAdminController extends Controller
             'parcours.*.description' => 'nullable|string',
             'doctoral_teams' => 'array',
             'doctoral_teams.*.name' => 'required_with:doctoral_teams|string|max:255',
-            'doctoral_teams.*.discipline' => 'nullable|string|max:255',
-            'doctoral_teams.*.contact' => 'nullable|string|max:255',
-            'doctoral_teams.*.email' => 'nullable|email|max:255',
             'doctoral_teams.*.focus' => 'nullable|string',
         ]);
 
@@ -143,9 +140,6 @@ class EtablissementAdminController extends Controller
             'parcours.*.description' => 'nullable|string',
             'doctoral_teams' => 'array',
             'doctoral_teams.*.name' => 'required_with:doctoral_teams|string|max:255',
-            'doctoral_teams.*.discipline' => 'nullable|string|max:255',
-            'doctoral_teams.*.contact' => 'nullable|string|max:255',
-            'doctoral_teams.*.email' => 'nullable|email|max:255',
             'doctoral_teams.*.focus' => 'nullable|string',
         ]);
 
