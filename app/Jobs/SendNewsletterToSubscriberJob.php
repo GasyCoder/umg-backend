@@ -36,6 +36,25 @@ class SendNewsletterToSubscriberJob implements ShouldQueue
             ]);
     }
 
+    /**
+     * Get the middleware the job should pass through.
+     *
+     * @return array
+     */
+    public function middleware()
+    {
+        // Retry en cas d'erreur SMTP (timeout), 3 tentatives, pause de 10-60s
+        return [(new \Illuminate\Queue\Middleware\ThrottlesExceptions(3, 60))->backoff(30)];
+    }
+
+    /**
+     * Determine the time at which the job should timeout.
+     */
+    public function retryUntil()
+    {
+        return now()->addHours(2);
+    }
+
     public function handle(): void
     {
         $send = NewsletterSend::with(['campaign', 'subscriber'])->find($this->sendId);
@@ -59,6 +78,11 @@ class SendNewsletterToSubscriberJob implements ShouldQueue
         }
 
         try {
+            // RATE LIMITING MANUEL (SMTP Protection)
+            // On dort 1 seconde pour limiter à ~60 mails/min max par worker
+            // Cela évite de se faire bannir par le provider SMTP (limites horaires)
+            sleep(1); 
+
             Mail::to($subscriber->email)->send(new NewsletterCampaignMail($campaign, $subscriber, $send->id));
 
             $send->update([
@@ -70,14 +94,22 @@ class SendNewsletterToSubscriberJob implements ShouldQueue
             $this->finalizeCampaignIfDone($campaign->id);
 
         } catch (\Throwable $e) {
+            $errorMsg = mb_substr($e->getMessage(), 0, 2000);
+            
+            // On ne marque FAILED définitif que si on a épuisé les retries (géré par le framework)
+            // Mais ici on veut voir l'erreur dans la table 'newsletter_sends' immédiatement pour debug
+            // On met à jour l'erreur mais on garde le status QUEUED si on veut que le Job Retry le tente encore ?
+            // Non, si ça fail ici, le Job va throw, et Laravel va le remettre en queue ou failed_jobs.
+            // On marque failed dans notre table tracking pour info.
+            
             $send->update([
-                'status' => NewsletterSend::STATUS_FAILED,
-                'error' => mb_substr($e->getMessage(), 0, 2000),
+                'status' => NewsletterSend::STATUS_FAILED, // Temporaire, le retry pourrait réussir
+                'error' => $errorMsg,
             ]);
 
             $this->finalizeCampaignIfDone($campaign->id);
 
-            // relancer si vous voulez
+            // Important: Re-throw pour que Laravel gère le retry/backoff
             throw $e;
         }
     }
