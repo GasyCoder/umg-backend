@@ -32,7 +32,7 @@ class EtablissementController extends Controller
 
     public function show(string $slug)
     {
-        $etablissement = Etablissement::with(['logo', 'coverImage'])
+        $etablissement = Etablissement::with(['logo', 'coverImage', 'formations', 'parcours', 'doctoralTeams'])
             ->where('slug', $slug)
             ->where('is_active', true)
             ->firstOrFail();
