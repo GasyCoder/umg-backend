@@ -75,7 +75,11 @@
                         @if(!empty($logoUrl))
                           <td style="padding-right:12px;">
                             <a href="{{ $frontendBase }}" style="text-decoration:none;display:inline-block;">
-                              <img src="{{ $logoUrl }}" alt="Université de Mahajanga" height="32" style="display:block;height:32px;width:auto;border:0;outline:none;text-decoration:none;background-color:#ffffff;padding:4px;border-radius:6px;">
+                              <div style="background:#1e3a8a;padding:6px 10px;border-radius:8px;display:inline-block;">
+                                <img src="{{ $logoUrl }}" alt="Université de Mahajanga" 
+                                    height="28" 
+                                    style="display:block;height:28px;width:auto;border:0;outline:none;text-decoration:none;">
+                              </div>
                             </a>
                           </td>
                         @endif
