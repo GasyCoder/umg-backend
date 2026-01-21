@@ -63,6 +63,7 @@ class DocumentAdminController extends Controller
             'description' => $data['description'] ?? null,
             'status' => $data['status'] ?? 'draft',
             'is_public' => $data['is_public'] ?? true,
+            'is_important' => $data['is_important'] ?? false,
             'published_at' => ($data['status'] ?? 'draft') === 'published' ? now() : null,
             'document_category_id' => $data['document_category_id'],
             'file_id' => $data['file_id'],
@@ -113,6 +114,7 @@ class DocumentAdminController extends Controller
             'document_category_id' => $data['document_category_id'] ?? $doc->document_category_id,
             'file_id' => $data['file_id'] ?? $doc->file_id,
             'is_public' => $data['is_public'] ?? $doc->is_public,
+            'is_important' => $data['is_important'] ?? $doc->is_important,
             'status' => $data['status'] ?? $doc->status,
         ])->save();
 
