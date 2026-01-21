@@ -37,13 +37,18 @@ class NewsletterCampaignMail extends Mailable
         $mediaId = $logoId > 0 ? $logoId : ($faviconId > 0 ? $faviconId : 0);
         if ($mediaId <= 0) return null;
 
-        $cacheKey = 'settings.brand.media_url.' . $mediaId;
-        $url = Cache::remember($cacheKey, 3600, function () use ($mediaId) {
+        // Cache only the path, not the full URL, to avoid localhost issues
+        $cacheKey = 'settings.brand.media_path.' . $mediaId;
+        $path = Cache::remember($cacheKey, 3600, function () use ($mediaId) {
             $media = \App\Models\Media::find($mediaId);
-            return $media?->url;
+            return $media?->path;
         });
 
-        return $this->absoluteUrl(is_string($url) ? $url : null);
+        if (!is_string($path) || $path === '') return null;
+
+        // Build the full URL using the current APP_URL
+        $appUrl = rtrim((string) config('app.url', ''), '/');
+        return $appUrl . '/storage/' . ltrim($path, '/');
     }
 
     public function build()
