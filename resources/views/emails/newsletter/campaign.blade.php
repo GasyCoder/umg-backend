@@ -73,15 +73,14 @@
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         @if(!empty($logoUrl))
-                          <td style="padding-right:12px;">
-                            <a href="{{ $frontendBase }}" style="text-decoration:none;display:inline-block;">
-                              <div style="background:#1e3a8a;padding:6px 10px;border-radius:8px;display:inline-block;">
-                                <img src="{{ $logoUrl }}" alt="Université de Mahajanga" 
-                                    height="28" 
-                                    style="display:block;height:28px;width:auto;border:0;outline:none;text-decoration:none;">
-                              </div>
-                            </a>
-                          </td>
+                        <td style="padding-right:12px;">
+                          <a href="{{ $frontendBase }}" style="text-decoration:none;display:inline-block;">
+                            <img src="https://api.mahajanga-univ.mg/logo.png" 
+                                alt="Université de Mahajanga" 
+                                height="36" 
+                                style="display:block;height:36px;width:auto;border:0;outline:none;text-decoration:none;">
+                          </a>
+                        </td>
                         @endif
                         <td style="text-align:left;">
                           <div class="brand-title" style="font-size:20px;line-height:1.2;font-weight:800;letter-spacing:-.2px;color:#0f172a;">
