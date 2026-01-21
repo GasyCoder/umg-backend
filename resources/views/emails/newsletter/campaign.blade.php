@@ -177,15 +177,15 @@
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
                 <tr>
                   <td class="px" style="padding:26px 24px;background:#03216d;color:#e2e8f0;">
-                    <div style="font-size:12px;line-height:1.6;color:#94a3b8;">
-                      Vous recevez cet email car vous êtes abonné(e) à la newsletter.
+                    <div style="font-size:10px;line-height:1.6;color:#94a3b8;">
+                      Vous recevez cet email car vous êtes inscrit à notre liste de diffusion. Votre vie privée est importante pour nous.
                     </div>
-                    <div style="margin-top:12px;font-size:13px;line-height:1.8;">
-                      <a href="{{ $unsubscribeUrl }}" style="color:#ffffff;text-decoration:underline;font-weight:700;">Se désabonner</a>
+                    <div style="margin-top:12px;font-size:10px;line-height:1.8;">
+                      <a href="{{ $unsubscribeUrl }}" style="color:#ffffff;text-decoration:underline;font-weight:300;">Se désabonner</a>
                       <span style="color:#334155;">&nbsp;&nbsp;|&nbsp;&nbsp;</span>
                       <a href="{{ $frontendBase }}" style="color:#cbd5e1;text-decoration:none;">Visiter le site</a>
                     </div>
-                    <div style="margin-top:16px;font-size:12px;color:#64748b;">
+                    <div style="margin-top:16px;font-size:10px;color:#64748b;">
                       © {{ date('Y') }} Université de Mahajanga
                     </div>
                   </td>
