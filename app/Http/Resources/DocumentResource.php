@@ -25,6 +25,7 @@ class DocumentResource extends JsonResource
             'file_type' => $this->file?->mime,
             'file_size' => $this->file?->size,
             'downloads_count' => (int) $this->download_count,
+            'is_important' => (bool) $this->is_important,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

@@ -23,6 +23,7 @@ class UpdateDocumentRequest extends FormRequest
             'file_id' => ['nullable','exists:media,id'],
             'file' => ['nullable','file','max:51200'],
             'is_public' => ['sometimes','boolean'],
+            'is_important' => ['sometimes','boolean'],
             'status' => ['sometimes','string','in:draft,published,archived'],
         ];
     }

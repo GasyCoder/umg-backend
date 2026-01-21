@@ -21,6 +21,7 @@ class StoreDocumentRequest extends FormRequest
             'file' => ['nullable','file','max:51200'], // 50MB max
             'status' => ['sometimes','string','in:draft,published,archived'],
             'is_public' => ['sometimes','boolean'],
+            'is_important' => ['sometimes','boolean'],
         ];
     }
 }

@@ -13,13 +13,14 @@ class Document extends Model
         'title','slug','description','status','published_at',
         'document_category_id','file_id','download_count',
         'created_by','validated_by','validated_at',
-        'is_public'
+        'is_public','is_important'
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
         'validated_at' => 'datetime',
         'is_public' => 'boolean',
+        'is_important' => 'boolean',
     ];
 
     public function category() { return $this->belongsTo(DocumentCategory::class, 'document_category_id'); }

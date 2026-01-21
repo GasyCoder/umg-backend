@@ -21,6 +21,13 @@ class DocumentCategoryPublicController extends Controller
             $q->whereNull('parent_id');
         }
 
+        // Add document count (only published documents)
+        if ($request->boolean('with_count')) {
+            $q->withCount(['documents' => function ($query) {
+                $query->where('status', 'published');
+            }]);
+        }
+
         $per = min((int) $request->get('per_page', 100), 200);
 
         return DocumentCategoryResource::collection($q->paginate($per));
