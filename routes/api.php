@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\AuthAdminController;
+use App\Http\Controllers\Api\V1\Admin\PopupAdminController;
 
 // PUBLIC controllers
 use App\Http\Controllers\Api\V1\Admin\CategoryAdminController;
@@ -34,6 +35,7 @@ use App\Http\Controllers\Api\V1\Public\PartnerPublicController;
 use App\Http\Controllers\Api\V1\Public\PostPublicController;
 use App\Http\Controllers\Api\V1\Public\ProjectPublicController;
 use App\Http\Controllers\Api\V1\Public\TagPublicController;
+use App\Http\Controllers\Api\V1\Public\PopupPublicController;
 use App\Http\Controllers\Api\V1\PublicApi\EtablissementController;
 use App\Http\Controllers\Api\V1\PublicApi\OrganizationPageController;
 use App\Http\Controllers\Api\V1\PublicApi\PresidentMessageController;
@@ -75,6 +77,9 @@ Route::prefix('v1')->group(function () {
 
     // Slides (public)
     Route::get('/slides', [SlidePublicController::class, 'index']);
+
+    // Popups (public)
+    Route::get('/popup/active', [PopupPublicController::class, 'active']);
 
     // Etablissements (public)
     Route::get('/etablissements', [EtablissementController::class, 'index']);
@@ -329,6 +334,19 @@ Route::prefix('v1')->group(function () {
         Route::get('/admin/services/{id}', [ServiceAdminController::class, 'show']);
         Route::put('/admin/services/{id}', [ServiceAdminController::class, 'update']);
         Route::delete('/admin/services/{id}', [ServiceAdminController::class, 'destroy']);
+
+        /*
+        |--------------------------------------------------------------------------
+        | ADMIN: POPUPS
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/admin/popups', [PopupAdminController::class, 'index']);
+        Route::post('/admin/popups', [PopupAdminController::class, 'store']);
+        Route::get('/admin/popups/{id}', [PopupAdminController::class, 'show']);
+        Route::put('/admin/popups/{id}', [PopupAdminController::class, 'update']);
+        Route::delete('/admin/popups/{id}', [PopupAdminController::class, 'destroy']);
+        Route::post('/admin/popups/{id}/toggle', [PopupAdminController::class, 'toggle']);
+        Route::post('/admin/popups/{id}/duplicate', [PopupAdminController::class, 'duplicate']);
 
     });
 });
