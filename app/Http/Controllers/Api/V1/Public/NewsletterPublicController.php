@@ -15,10 +15,10 @@ class NewsletterPublicController extends Controller
         $data = $request->validated();
 
         $subscriber = NewsletterSubscriber::query()->firstOrNew(['email' => $data['email']]);
-        
-        // If already active, just return success
+
+        // If already active, return conflict error
         if ($subscriber->exists && $subscriber->status === 'active') {
-            return response()->json(['message' => 'Vous êtes déjà inscrit.']);
+            return response()->json(['message' => 'Cet email est déjà inscrit à la newsletter.'], 409);
         }
 
         $subscriber->name = $data['name'] ?? $subscriber->name;
