@@ -210,6 +210,38 @@ class NewsletterSubscriberAdminController extends Controller
         ]);
     }
 
+    /**
+     * Delete multiple subscribers at once
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $this->ensureRole($request);
+
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['required', 'integer'],
+        ]);
+
+        $ids = $data['ids'];
+        $subscribers = NewsletterSubscriber::whereIn('id', $ids)->get();
+        $deletedCount = $subscribers->count();
+
+        // Log before deletion
+        Audit::log($request, 'newsletter.subscriber.bulk_delete', 'NewsletterSubscriber', null, [
+            'deleted_count' => $deletedCount,
+            'emails' => $subscribers->pluck('email')->toArray(),
+        ]);
+
+        NewsletterSubscriber::whereIn('id', $ids)->delete();
+
+        return response()->json([
+            'data' => [
+                'deleted' => $deletedCount,
+            ],
+            'message' => "{$deletedCount} abonné(s) supprimé(s) avec succès.",
+        ]);
+    }
+
     private function ensureRole(Request $request): void
     {
         abort_unless($request->user()?->hasAnyRole(['SuperAdmin','Validateur']), 403);

@@ -255,7 +255,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/admin/newsletter/subscribers/bulk', [NewsletterSubscriberAdminController::class, 'bulkStore']);
         Route::put('/admin/newsletter/subscribers/{id}', [NewsletterSubscriberAdminController::class, 'update']);
         Route::delete('/admin/newsletter/subscribers/{id}', [NewsletterSubscriberAdminController::class, 'destroy']);
-        
+        Route::post('/admin/newsletter/subscribers/bulk-delete', [NewsletterSubscriberAdminController::class, 'bulkDestroy']);
+
         Route::get('/admin/newsletter/campaigns', [NewsletterCampaignAdminController::class, 'index']);
         Route::get('/admin/newsletter/campaigns/{id}', [NewsletterCampaignAdminController::class, 'show']);
         Route::post('/admin/newsletter/campaigns', [NewsletterCampaignAdminController::class, 'store']);
